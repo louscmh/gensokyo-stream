@@ -1,0 +1,592 @@
+@font-face {
+    font-family: "Franco-Bold";
+    src: url("../../_shared_assets/fonts/Franco_Bold.ttf");
+}
+
+#main {
+    position: absolute;
+    width:1920px;
+    height:1080px;
+    top:0px;
+    left:0px;
+    display:flex;
+    font-family: "Franco-Bold";
+    color: #5f3a39;
+    font-size:24px;
+    font-weight: 300;
+}
+
+#bg, #fg, #bg_overview, #asset_1, #asset_2 {
+    position:absolute;
+    top:0px;
+    left:0px;
+    z-index:-3;
+}
+
+#bg {
+    z-index: -4;
+}
+
+#bg_overview {
+    clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+    /* clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); */
+    transition: 500ms cubic-bezier(0.000, 0.125, 0.000, 1.005);
+}
+
+#fg {
+    z-index:4;
+}
+
+#asset_1, #asset_2 {
+    z-index:5 !important;
+}
+
+#mainShowcase {
+    position:absolute;
+    top:0px;
+    left:0px;
+    width:1920px;
+    height:1080px;
+    z-index:1;
+}
+
+#client {
+    position:absolute;
+    width:1300px;
+    height:900px;
+    top: 90px;
+    left: 90px;
+    /* background-color: rgba(255,255,255,0.5); */
+    display:flex;
+    align-items: end;
+    justify-content: space-between;
+    border-radius: 40px;
+    overflow: hidden;
+}
+
+#modpool {
+    font-family: "Franco-Bold";
+    font-size: 150px;
+    margin-bottom:-42px;
+    margin-left: -10px;
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8), 
+    0px 0px 24px rgba(0, 0, 0, 0.9);
+
+}
+
+#replayContainer {
+    height:inherit;
+    display:flex;
+}
+
+#replay {
+    font-size:28px;
+    font-family:"Franco-Bold";
+    padding-left:30px;
+    padding-right:30px;
+    background-color: #dca39e;
+    height: fit-content;
+    padding-bottom:3px;
+    border-radius: 0 0 40px 0;
+    transition: 500ms ease-in-out;
+}
+
+#songDetails {
+    display:flex;
+    flex-direction: column;
+    align-items: end;
+}
+
+#artistTitle {
+    font-size: 24px;
+    /* text-shadow: 0px 0px 1px rgba(0, 0, 0, 1), 
+    2px 2px 5px rgba(0, 0, 0, 0.9), 
+    0px 0px 12px rgba(0, 0, 0, 1); */
+    color: #5f3a39;
+    background-color: rgba(220, 163, 158,1);
+    padding-right:15px;
+    padding-left:15px;
+    padding-bottom:4px;
+    margin-bottom:10px;
+    border-radius: 10px 0 0 10px;
+}
+
+#songTitle {
+    font-size: 36px !important;
+    font-family: "Franco-Bold";
+    text-align: right;
+    width:fit-content;
+    color: #5f3a39;
+    background-color: rgba(220, 163, 158,1);
+    padding-right:15px;
+    padding-left:20px;
+    padding-bottom:6px;
+    border-radius: 20px 0 0 20px;
+}
+
+#beatmapDetails {
+    position:absolute;
+    width:441px;
+    height:900px;
+    left: 1390px;
+    top: 90px;
+    /* background-color: rgba(255,255,255,0.5); */
+    display:flex;
+    flex-direction: column;
+    color: #5f3a39;
+}
+
+#sourceContainer {
+    height:225px;
+    width:inherit;
+    /* border: 2px solid black; */
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    z-index: 2 !important;
+}
+
+#sourceLining {
+    height:225px;
+    width:inherit;
+    /* border: 2px solid black; */
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    z-index: 2 !important;
+    position:absolute;
+    top:0px;
+    left:0px;
+}
+
+#source {
+	/* filter: brightness(70%) url("#sharpBlur"); */
+	object-fit: cover;
+	object-position: center;
+    height:225px;
+    width:inherit;
+    z-index: 4;
+    border-radius: 0px 40px 0px 0px;
+}
+
+#modRow {
+    display:flex;
+    justify-content: space-between;
+    z-index: 4;
+}
+
+#pick {
+    font-family: "Franco-Bold";
+    font-size: 80px;
+    margin-left:10px;
+    margin-top:-15px;
+    margin-bottom:5px;
+    margin-right:70px;
+    z-index: 4;
+}
+
+#customText {
+    font-size:16px;
+    color:black;
+    margin-right:18px;
+    margin-top:20px;
+    display:flex;
+    flex-direction: column;
+    align-items: end;
+    z-index: 4;
+}
+
+#detailsRight {
+    display:flex;
+    flex-direction: column;
+    width:inherit;
+    align-items: end;
+    font-family:"Franco-Bold";
+    font-size:20px;
+    z-index: 4;
+}
+
+#mapperText {
+    margin-right:18px;
+    margin-top:38px;
+    height:70px;
+}
+
+#difficultyContainer {
+    margin-right:18px;
+    width:340px;
+    overflow:hidden;
+	white-space: nowrap;
+    height:50px;
+    display:flex;
+    justify-content: end;
+    position:relative;
+}
+
+#difficultyText, #difficultyTextDelay {
+    width:fit-content;
+}
+
+#difficultyTextDelay {
+    display:none;
+    position:absolute;
+}
+
+#sr, #od, #cs, #ar, #bpm, #length {
+    font-size:40px;
+    margin-right:18px;
+    height:68px;
+}
+
+#pickMask {
+    position:absolute;
+    top:1007px;
+    left:90px;
+    width:1740px;
+    height:56px;
+    display:flex;
+    overflow:hidden;
+}
+
+#pickQueue {
+    top:1007px;
+    left:90px;
+    width:fit-content;
+    height:56px;
+    display:flex;
+    transition: 1000ms ease-in-out;
+}
+
+.pickItem {
+    height:56px;
+    width:332px;
+    position:relative;
+    margin-right:18px;
+    transition: 1000ms ease-in-out;
+    overflow: hidden;
+    border-radius:20px;
+}
+
+.pickOverlay {
+    position: absolute;
+    top:0px;
+    left:0px;
+    z-index:1;
+    width:100%;
+    height:100%;
+	background-image: linear-gradient(to right, rgba(220, 163, 158,0.5) ,rgba(220, 163, 158,0.5));
+    transition: 1000ms ease-in-out;
+}
+
+.pickName {
+    font-family: "Franco-Bold";
+    font-size:30px;
+    color:#fefdf6;
+    position: absolute;
+    margin-top:-5px;
+    top:0px;
+    left:0px;
+    z-index:2;
+    width:95%;
+    height:105%;
+    display:flex;
+    align-items: center;
+    justify-content: end;
+    transition: 1000ms ease-in-out;
+}
+
+.pickSource {
+    position: absolute;
+    top:0px;
+    left:0px;
+    z-index:0;
+    width:100%;
+    height:100%;
+	object-fit: cover;
+	object-position: center;
+    transition: 1000ms ease-in-out;
+}
+
+.lastPick {
+    opacity:0;
+    transition: 1000ms ease-in-out;
+}
+
+.lastOverlay {
+	background-image: linear-gradient(to right, rgba(220, 163, 158,1) ,rgba(220, 163, 158,0));
+    transition: 1000ms ease-in-out;
+}
+
+.lastSource {
+    opacity:0;
+    transition: 1000ms ease-in-out;
+}
+
+#sceneTransition {
+    width: 1920px;
+    height: 1080px;
+    position: absolute;
+    top:0px;
+    left:0px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    z-index: 5 !important;
+}
+
+#transitionVideo {
+    border-radius: 40px;
+    width:1750px; 
+    height:900px; 
+    object-fit: cover;
+    z-index: 5 !important;
+}
+
+/* OVERVIEW SCENE */
+#overviewScene {
+    position: absolute;
+    top:0px;
+    left:0px;
+    width:1920px;
+    height:1080px;
+    display:flex;
+    justify-content: center;
+    opacity:0;
+}
+
+#overviewStage {
+    position: absolute;
+    top:0px;
+    left:0px;
+    width:1920px;
+    height:1120px;
+    font-family: "Franco-Bold";
+    font-size:150px;
+    color:black;
+    display:flex;
+    align-items: end;
+}
+
+#overviewDetails {
+    position: absolute;
+    top:0px;
+    left:0px;
+    width:1920px;
+    height:1120px;
+    font-family: "Franco-Bold";
+    font-size:150px;
+    color:black;
+    display:flex;
+    justify-content: end;
+    align-items: end;
+}
+
+#mappoolContainer {
+    height:fit-content;
+    width: 1840px;
+    margin-top:95px;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height:875px;
+}
+
+.mapContainer {
+    display:flex;
+    justify-content: center;
+    width:1840px;
+    height:fit-content;
+    flex-wrap: wrap;
+}
+
+.clicker {
+    width:466px;
+    height:95px;
+    display:flex;
+    position:relative;
+    margin-inline: 70px;
+    margin-bottom:30px;
+}
+
+.mapDetails {
+    position:absolute;
+    top:0px;
+    left:0px;
+    width:inherit;
+    height: inherit;
+    display:flex;
+    flex-direction: column;
+    font-family: "Franco-Bold";
+    color:black;
+    z-index:3;
+}
+
+.mapTitleContainer {
+    width:inherit;
+    height:35px;
+    position:relative;
+}
+
+.mapTitle {
+    width:90%;
+    height:35px;
+    font-size:25px;
+    margin-left:5px;
+    margin-top:3px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    
+}
+
+.mapArtistContainer {
+    width:inherit;
+    height:21px;
+    position:relative;
+}
+
+.mapArtist {
+    width:90%;
+    height:21px;
+    font-size:14px;
+    margin-left:7px;
+    margin-top:-1px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.mapBottom {
+    display:flex;
+    margin-top:7px;
+}
+
+.mapMapperContainer {
+    display:flex;
+    flex-direction: column;
+    width:145px;
+}
+
+.mapMapperTitle, .mapDifficultyTitle {
+    font-family: "Franco-Bold";
+    font-size:10px;
+    margin-left:7px;
+}
+
+.mapMapper, .mapDifficulty {
+    font-family: "Franco-Bold";
+    font-size:10px;
+    margin-left:7px;
+}
+
+.mapDifficulty {
+    width:150px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.mapModpool {
+    position:absolute;
+    top:0px;
+    left:-5px;
+    width:inherit;
+    height: inherit;
+    display:flex;
+    justify-content: end;
+    align-items: end;
+    font-family: 'Franco-Bold';
+    color:white;
+    font-size:54px;
+    margin-top:14px;
+    z-index: 2;
+}
+
+.mapOverlay {
+    position:absolute;
+    top:0px;
+    left:0px;
+    width:inherit;
+    height: inherit;
+    z-index: 1;
+    background-image: linear-gradient(to right, rgba(220, 163, 158,1) , rgba(220, 163, 158,0.8), rgba(220, 163, 158,0));;
+}
+
+.mapSource {
+    position:absolute;
+    top:0px;
+    left:0px;
+    width:inherit;
+    height: inherit;
+    z-index: 0;
+	object-fit: cover;
+	object-position: center;
+	filter: brightness(60%);
+    /* background-image: url(../../_shared_assets/design/main_banner.png); */
+}
+
+/* CONTROL PANEL */
+#controlPanel {
+    width:1920px;
+    height:200px;
+    z-index:0;
+    position:absolute;
+    left:0px;
+    top:1085px;
+    display:flex;
+    align-items: center;
+    font-size: 30px;
+    font-family: 'Franco-Bold', sans-serif;
+    font-weight: normal;
+    color: white;
+    background-color: #252525;
+    user-select: none;
+}
+
+#sceneButton {
+    background:rgb(4, 96, 139);
+    color:white;
+    width:400px;
+    height:150px;
+    border-radius: 20px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-inline: 25px;
+    padding-inline:10px;
+    transition: 250ms ease-in-out;
+}
+
+@keyframes scrollText {
+	0% {
+	  transform: translateX(100%);
+	}
+	100% {
+	  transform: translateX(-100%);
+	}
+}
+
+@keyframes fadeOutRight {
+    0% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(600px);
+        opacity: 0;
+    }
+}
+
+@keyframes fadeInLeft {
+    0% {
+        transform: translateX(-600px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
