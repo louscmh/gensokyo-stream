@@ -1,90 +1,114 @@
 [
-  {
-    "beatmapId": 2025135,
-    "pick": "NM1",
-    "modSR": 6.50,
-    "customSong": false,
-    "collab": "",
-    "mappers": ""
-  },
-  {
-    "beatmapId": 4024170,
-    "pick": "NM2",
-    "modSR": 6.61,
-    "customSong": false,
-    "collab": "",
-    "mappers": ""
-  },
-  {
-    "beatmapId": 4088921,
-    "pick": "NM3",
-    "modSR": 6.21,
-    "customSong": false,
-    "collab": "",
-    "mappers": ""
-  },
-  {
-    "beatmapId": 4468368,
-    "pick": "NM4",
-    "modSR": 6.34,
-    "customSong": false,
-    "collab": "",
-    "mappers": ""
-  },
-  {
-    "beatmapId": 978628,
-    "pick": "HD1",
-    "modSR": 6.14,
-    "customSong": false,
-    "collab": "",
-    "mappers": ""
-  },
-  {
-    "beatmapId": 3701331,
-    "pick": "HD2",
-    "modSR": 5.47,
-    "customSong": false,
-    "collab": "",
-    "mappers": ""
-  },
-  {
-    "beatmapId": 717133,
-    "pick": "HR1",
-    "modSR": 6.73,
-    "customSong": false,
-    "collab": "",
-    "mappers": ""
-  },
-  {
-    "beatmapId": 3029675,
-    "pick": "HR2",
-    "modSR": 6.26,
-    "customSong": false,
-    "collab": "",
-    "mappers": ""
-  },
-  {
-    "beatmapId": 3174658,
-    "pick": "DT1",
-    "modSR": 6.75,
-    "customSong": false,
-    "collab": "",
-    "mappers": ""
-  },
-  {
-    "beatmapId": 4009188,
-    "pick": "DT2",
-    "modSR": 6.71,
-    "customSong": false,
-    "collab": "",
-    "mappers": ""
-  },
-  {
-    "beatmapId": 3837066,
-    "pick": "DT3",
-    "modSR": 6.36,
-    "customSong": false,
-    "collab": "",
-    "mappers": ""
-  }
+ {
+   "beatmapId": 1511837,
+   "pick": "NM1",
+   "modSR": 6.54,
+   "customSong": false,
+   "collab": "",
+   "mappers": ""
+ },
+ {
+   "beatmapId": 4005731,
+   "pick": "NM2",
+   "modSR": 6.51,
+   "customSong": false,
+   "collab": "",
+   "mappers": ""
+ },
+ {
+   "beatmapId": "Girls Logic Observatory - Hollow Masquerade (SA ver.) (Sagu) [Kokoro].osu",
+   "pick": "NM3",
+   "modSR": 6.2,
+   "customSong": false,
+   "collab": "",
+   "mappers": ""
+ },
+ {
+   "beatmapId": 4321758,
+   "pick": "NM4",
+   "modSR": 5.78,
+   "customSong": false,
+   "collab": "",
+   "mappers": ""
+ },
+ {
+   "beatmapId": 3537093,
+   "pick": "HD1",
+   "modSR": 6.07,
+   "customSong": false,
+   "collab": "",
+   "mappers": ""
+ },
+ {
+   "beatmapId": 3350321,
+   "pick": "HD2",
+   "modSR": 5.53,
+   "customSong": false,
+   "collab": "",
+   "mappers": ""
+ },
+ {
+   "beatmapId": 1513645,
+   "pick": "HR1",
+   "modSR": 6.43,
+   "customSong": false,
+   "collab": "",
+   "mappers": ""
+ },
+ {
+   "beatmapId": 266778,
+   "pick": "HR2",
+   "modSR": 6.14,
+   "customSong": false,
+   "collab": "",
+   "mappers": ""
+ },
+ {
+   "beatmapId": 2801940,
+   "pick": "DT1",
+   "modSR": 6.47,
+   "customSong": false,
+   "collab": "",
+   "mappers": ""
+ },
+ {
+   "beatmapId": 4793444,
+   "pick": "DT2",
+   "modSR": 6.66,
+   "customSong": false,
+   "collab": "",
+   "mappers": ""
+ },
+ {
+   "beatmapId": 4422422,
+   "pick": "DT3",
+   "modSR": 5.99,
+   "customSong": false,
+   "collab": "",
+   "mappers": ""
+ },
+ {
+   "beatmapId": 2207263,
+   "pick": "FM1",
+   "modSR": 6.02,
+   "customSong": false,
+   "collab": "",
+   "mappers": ""
+ },
+ {
+   "beatmapId": "ZUN - Haruka 38 Man Kilo no Voyage (Tokiwa Kano) [It's, Lunatic Time!].osu",
+   "pick": "FM2",
+   "modSR": 5.45,
+   "customSong": false,
+   "collab": "",
+   "mappers": ""
+ },
+ {
+   "beatmapId": 1391631,
+   "pick": "TB",
+   "modSR": 6.64,
+   "customSong": false,
+   "collab": "",
+   "mappers": ""
+ }
 ]
