@@ -51,11 +51,21 @@
                   <div class="matchSongStat" id="matchSongSr">0.00*</div>
                 </div>
                 <div class="matchSongStatContainer">
+                  <div class="matchSongStatText">CS</div>
+                  <div class="matchSongStat" id="matchSongCs">0.0 (0.0)</div>
+                </div>
+              </div>
+              <div class="matchSongStatColumn">
+                <div class="matchSongStatContainer">
+                  <div class="matchSongStatText">AR</div>
+                  <div class="matchSongStat" id="matchSongAr">0.0 (0.0)</div>
+                </div>
+                <div class="matchSongStatContainer">
                   <div class="matchSongStatText">OD</div>
                   <div class="matchSongStat" id="matchSongOd">0.0 (0.0)</div>
                 </div>
               </div>
-                <div class="matchSongStatColumn">
+              <div class="matchSongStatColumn">
                 <div class="matchSongStatContainer">
                   <div class="matchSongStatText">BPM</div>
                   <div class="matchSongStat" id="matchSongBpm">000</div>
@@ -73,10 +83,10 @@
       <div id="matchBottom">
         <div id="bottomPlayerOne">
           <img class="bottomPfp" id="bottomPlayerOnePfp">
-          <div id="bottomP1Top">
-            <div id="bottomP1Text">P1</div>
-            <div id="bottomP1Pick">
-              <div class="bottomPickText" id="bottomP1PickText">Currently Banning</div>
+          <div id="bottomT1Top">
+            <div id="bottomT1Text">T1</div>
+            <div id="bottomT1Pick">
+              <div class="bottomPickText" id="bottomT1PickText">Currently Banning</div>
               <div class="bottomPickArrow">>>></div>
             </div>
           </div>
@@ -93,12 +103,12 @@
         <div id="bottomMiddleContainer">
           <div id="bottomChat">
             <div id="chats"></div>
-            <div id="bottomChatText">Chat</div>
+            <div id="bottomChatText">チャット</div>
           </div>
           <div id="bottomMatch">
             <div id="bottomMatchResults">
-              <div id="bottomResultsTop"></div>
-              <div id="bottomResultsBottom">000,001</div>
+              <div id="bottomResultsTop">決着</div>
+              <div id="bottomResultsBottom"></div>
             </div>
             <div id="bottomMatchProgressBar">
               <div id="bottomSongProgressText">SONG PROGRESS</div>
@@ -115,10 +125,10 @@
         </div>
         <div id="bottomPlayerTwo">
           <img class="bottomPfp" id="bottomPlayerTwoPfp">
-          <div id="bottomP2Top">
-            <div id="bottomP2Text">P2</div>
-            <div id="bottomP2Pick">
-              <div class="bottomPickText" id="bottomP2PickText">Currently Banning</div>
+          <div id="bottomT2Top">
+            <div id="bottomT2Text">T2</div>
+            <div id="bottomT2Pick">
+              <div class="bottomPickText" id="bottomT2PickText">Currently Banning</div>
               <div class="bottomPickArrow">&lt;&lt;&lt;</div>
             </div>
           </div>
@@ -143,9 +153,9 @@
             <div class="introPlayerText">Seed</div>
             <div class="introPlayerStatText" id="introPlayerOneSeed">#64</div>
           </div>
-          <div class="introPlayerContainer">
-            <div class="introPlayerText">Rank</div>
-            <div class="introPlayerStatText" id="introPlayerOneRank">#9999</div>
+          <div class="introRosterContainer">
+            <div class="introPlayerText">Players</div>
+            <div class="introPlayerStatText" id="introPlayerOneRoster">akjsdhbaskjhdasd</div>
           </div>
         </div>
       </div>
@@ -158,9 +168,9 @@
             <div class="introPlayerText">Seed</div>
             <div class="introPlayerStatText" id="introPlayerTwoSeed">#64</div>
           </div>
-          <div class="introPlayerContainer">
-            <div class="introPlayerText">Rank</div>
-            <div class="introPlayerStatText" id="introPlayerTwoRank">#9999</div>
+          <div class="introRosterContainer">
+            <div class="introPlayerText">Players</div>
+            <div class="introPlayerStatText" id="introPlayerTwoRoster">lkjasdhbasjdb</div>
           </div>
         </div>
       </div>
@@ -215,7 +225,7 @@
         <div id="mappoolContainer">
           <div id="overviewNM" class="mapContainerOverview">
             <!-- <div class="clickerOverview">
-              <div class="mapPickText">P1 PICK</div>
+              <div class="mapPickText">T1 PICK</div>
               <div class="mapBanContainer">
                 <img class="mapBanPlayer" src="../../_shared_assets/design/main_banner.png"></img>
                 <div class="mapBanText">BAN</div>
@@ -239,11 +249,11 @@
                 </div>
               </div>
               <div class="mapWin">
-                <div class="mapPlayerText">P1</div>
+                <div class="mapPlayerText">T1</div>
                 <div class="mapWinText">WIN</div>
               </div>
               <div class="mapWin">
-                <div class="mapPlayerText">P2</div>
+                <div class="mapPlayerText">T2</div>
                 <div class="mapWinText">WIN</div>
               </div>
               <img class="mapPickIcon" src="../../_shared_assets/design/pick_arrow_overview.png">
@@ -282,11 +292,11 @@
                 </div>
               </div>
               <div class="mapWin">
-                <div class="mapPlayerText">P1</div>
+                <div class="mapPlayerText">T1</div>
                 <div class="mapWinText">WIN</div>
               </div>
               <div class="mapWin">
-                <div class="mapPlayerText">P2</div>
+                <div class="mapPlayerText">T2</div>
                 <div class="mapWinText">WIN</div>
               </div>
               <img class="mapPickIconQueueLeft" src="../../_shared_assets/design/pick_queue_left.png">
@@ -326,8 +336,10 @@
                 <div class="upcomingStats">
                   <div class="upcomingDetailsText">SR</div>
                   <div id="upcomingSrText" class="upcomingDetailsStats">9.99*</div>
-                  <div class="upcomingDetailsText">OD</div>
-                  <div id="upcomingOdText" class="upcomingDetailsStats">9.99 (10.99)</div>
+                  <div class="upcomingDetailsText">CS</div>
+                  <div id="upcomingCsText" class="upcomingDetailsStats">9.9 (10.99)</div>
+                  <div class="upcomingDetailsText">AR</div>
+                  <div id="upcomingArText" class="upcomingDetailsStats">9.9 (10.99)</div>
                 </div>
                 <div id="upcomingMapper">
                   <div class="upcomingDetailsText2">MAPPED BY</div>
@@ -336,6 +348,8 @@
               </div>
               <div class="upcomingDetailsColumn">
                 <div class="upcomingStats">
+                  <div class="upcomingDetailsText">OD</div>
+                  <div id="upcomingOdText" class="upcomingDetailsStats">9.99 (10.99)</div>
                   <div class="upcomingDetailsText">BPM</div>
                   <div id="upcomingBpmText" class="upcomingDetailsStats">999 - 999 (999)</div>
                   <div class="upcomingDetailsText">LEN</div>
@@ -352,43 +366,31 @@
       </div>
       <div id="matchScene">
         <div id="matchClients">
-          <div id="matchClientOne">
-            <div id="matchClientOneDetails">
-              <div id="matchClientOneMissGlow"></div>
-              <div class="matchClientLeft">
-                <div class="matchClient100">
-                  <div class="matchClient100Text">100</div>
-                  <div class="matchClientText" id="matchClientOne100">99</div>
+          <div id="matchClientLeft">
+            <div id="matchClient1" class="matchClient">
+              <!-- <div id="matchClientOneDetails">
+                <div id="matchClientOneMissGlow"></div>
+                <div class="matchClientLeft">
+                  <div class="matchClient100">
+                    <div class="matchClient100Text">100</div>
+                    <div class="matchClientText" id="matchClientOne100">99</div>
+                  </div>
+                  <div class="matchClientMiss">
+                    <div class="matchClientMissText">MISS</div>
+                    <div class="matchClientText" id="matchClientOneMiss">99</div>
+                  </div>
                 </div>
-                <div class="matchClientMiss">
-                  <div class="matchClientMissText">MISS</div>
-                  <div class="matchClientText" id="matchClientOneMiss">99</div>
+                <div class="matchClientUr">
+                  <div class="matchClientUrText">UR</div>
+                  <div class="matchClientText" id="matchClientOneUr">999.99</div>
                 </div>
-              </div>
-              <div class="matchClientUr">
-                <div class="matchClientUrText">UR</div>
-                <div class="matchClientText" id="matchClientOneUr">999.99</div>
-              </div>
+              </div> -->
             </div>
+            <div id="matchClient2" class="matchClient"></div>
           </div>
-          <div id="matchClientTwo">
-            <div id="matchClientTwoDetails">
-              <div id="matchClientTwoMissGlow"></div>
-              <div class="matchClientLeft">
-                <div class="matchClient100">
-                  <div class="matchClient100Text">100</div>
-                  <div class="matchClientText" id="matchClientTwo100">99</div>
-                </div>
-                <div class="matchClientMiss">
-                  <div class="matchClientMissText">MISS</div>
-                  <div class="matchClientText" id="matchClientTwoMiss">99</div>
-                </div>
-              </div>
-              <div class="matchClientUr">
-                <div class="matchClientUrText">UR</div>
-                <div class="matchClientText" id="matchClientTwoUr">999.99</div>
-              </div>
-            </div>
+          <div id="matchClientRight">
+            <div id="matchClient3" class="matchClient"></div>
+            <div id="matchClient4" class="matchClient"></div>
           </div>
         </div>
         <div id="matchScoreBoard">
@@ -396,14 +398,14 @@
             <div id="matchWinningLeft">
               <div id="matchWinningLeftContent"></div>
               <div id="matchWinningLeftWinText">
-                <div class="mapPlayerText">P1</div>
+                <div class="mapPlayerText">T1</div>
                 <div class="mapWinText">WIN</div>
               </div>
             </div>
             <div id="matchWinningRight">
               <div id="matchWinningRightContent"></div>
               <div id="matchWinningRightWinText">
-                <div class="mapPlayerText">P2</div>
+                <div class="mapPlayerText">T2</div>
                 <div class="mapWinText">WIN</div>
               </div>
             </div>
@@ -434,13 +436,13 @@
       </div>
     </div>
     <div id="resultScene">
-      <img id="resultAsset_1" src="../../_shared_assets/design/seed_egts.png">
+      <!-- <img id="resultAsset_1" src="../../_shared_assets/design/seed_egts.png"> -->
       <img id="resultAsset_2" src="../../_shared_assets/design/match_result_asset.png">
       <div id="resultStageText"></div>
       <div id="resultSceneBanText">BAN</div>
       <div id="resultScenePickText">PICK</div>
       <div id="resultScoreline">
-        <div id="resultsStaticText">Results</div>
+        <div id="resultsStaticText">結果</div>
         <div id="resultScorelinePlayerOne">
           <img class="resultScorelineSource" id="resultScorelinePlayerOneSource">
           <div class="resultScorelineText" id="resultScorelinePlayerOneText">insertplayername</div>
@@ -464,7 +466,7 @@
                 <img class="resultContainerSource">
               </div>
               <div class="resultContainerBottom">
-                <div class="resultContainerPlayer">P1</div>
+                <div class="resultContainerPlayer">T1</div>
                 <div class="resultContainerText">BAN</div>
               </div>
             </div> -->
@@ -472,9 +474,9 @@
           <div id="resultPlayerPick">
             <div class="resultPlayerText">PICKS:</div>
             <img class="resultPlayerPickSource" id="resultPlayerPickSourceOne">
-            <div class="resultPlayerText" id="resultPlayerTextOne">P1 TOP</div>
+            <div class="resultPlayerText" id="resultPlayerTextOne">T1 上</div>
             <img class="resultPlayerPickSource" id="resultPlayerPickSourceTwo">
-            <div class="resultPlayerText" id="resultPlayerTextTwo">P2 BOTTOM</div>
+            <div class="resultPlayerText" id="resultPlayerTextTwo">T2 下</div>
           </div>
         </div>
         <div id="resultPickContainer">
@@ -489,10 +491,11 @@
         </div>
       </div>
     </div>
-    <!-- <img id="bg" src="../../_shared_assets/design/test.png"> -->
+    <!-- <img id="bg" src="../../_shared_assets/design/gts_bg.png"> -->
     <video id="bg" loop muted autoplay playsinline>
       <source src="../../_shared_assets/design/normal_banner_animated.mp4" type="video/mp4">
     </video>
+    <!-- <img id="bg_match" src="../../_shared_assets/design/match_bg.png"> -->
     <video id="bg_match" loop muted playsinline>
       <source src="../../_shared_assets/design/match_bg_animated.webm" type="video/webm">
     </video>

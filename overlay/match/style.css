@@ -1,21 +1,21 @@
 @font-face {
-    font-family: "Sora-Bold";
-    src: url("../../_shared_assets/fonts/Sora-Bold.ttf");
+    font-family: "Nohemi-Bold";
+    src: url("../../_shared_assets/fonts/Franco_Bold.ttf");
 }
 
 @font-face {
-    font-family: "Sora-ExtraBold";
-    src: url("../../_shared_assets/fonts/Sora-ExtraBold.ttf");
+    font-family: "Nohemi-ExtraBold";
+    src: url("../../_shared_assets/fonts/Franco_Bold.ttf");
 }
 
 @font-face {
-    font-family: "Sora-Light";
-    src: url("../../_shared_assets/fonts/Sora-Light.ttf");
+    font-family: "Nohemi-Light";
+    src: url("../../_shared_assets/fonts/Franco_Bold.ttf");
 }
 
 @font-face {
-    font-family: "Sora-Regular";
-    src: url("../../_shared_assets/fonts/Sora-Regular.ttf");
+    font-family: "Nohemi-Regular";
+    src: url("../../_shared_assets/fonts/Franco_Bold.ttf");
 }
 
 @font-face {
@@ -23,9 +23,16 @@
     src: url("../../_shared_assets/fonts/LINESeedJP_TTF_Bd.ttf");
 }
 
-body {
-    background-color: rgb(20, 20, 20);
+@font-face {
+    font-family: "Franco-Bold";
+    src: url("../../_shared_assets/fonts/Franco_Bold.ttf");
 }
+
+@font-face {
+    font-family: "Aoyagirei";
+    src: url("../../_shared_assets/fonts/aoyagirei.ttf");
+}
+
 
 #main {
     position: absolute;
@@ -34,8 +41,8 @@ body {
     top: 0px;
     left: 500px;
     display: flex;
-    font-family: "Sora-Light";
-    color: white;
+    font-family: "Nohemi-Light";
+    color: #5f3a39;
     font-size: 24px;
     user-select: none;
 }
@@ -47,8 +54,8 @@ body {
     top: 0px;
     left: 0px;
     background-color: rgba(0,0,0,0.5);
-    font-family: "Sora-ExtraBold";
-    color: white;
+    font-family: "Nohemi-ExtraBold";
+    color: #edbfbb;
     font-size: 80px;
     display:flex;
     justify-content: center;
@@ -118,7 +125,7 @@ body {
     left: 0px;
     width: 1920px;
     height: 1120px;
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
     font-size: 150px;
     color: white;
     display: flex;
@@ -131,7 +138,7 @@ body {
     left: 0px;
     width: 1920px;
     height: 1120px;
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
     font-size: 150px;
     color: white;
     display: flex;
@@ -169,6 +176,7 @@ body {
     position: relative;
     margin-inline: 70px;
     margin-block: 13.5px;
+    border-radius: 30px;
 }
 
 .mapDetailsOverview {
@@ -179,23 +187,26 @@ body {
     height: inherit;
     display: flex;
     flex-direction: column;
-    font-family: "Sora-Regular";
-    color: black;
+    font-family: "Nohemi-Regular";
+    color: #5f3a39;
     z-index: 3;
+    border-radius: 30px;
 }
 
 .mapTitleContainerOverview {
     width: inherit;
     height: 35px;
     position: relative;
+    margin-top:3px;
 }
 
 .mapTitleOverview {
+    font-family: "Nohemi-Regular";
     width: 75%;
     height: 35px;
     font-size: 25px;
-    margin-left: 5px;
-    margin-top: 3px;
+    margin-left: 11px;
+    margin-top: -3px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -212,8 +223,8 @@ body {
     width: 90%;
     height: 21px;
     font-size: 14px;
-    margin-left: 7px;
-    margin-top: -1px;
+    margin-left: 13px;
+    margin-top: -7px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -221,7 +232,7 @@ body {
 
 .mapBottomOverview {
     display: flex;
-    margin-top: 1px;
+    margin-top: -3px;
 }
 
 .mapMapperContainerOverview {
@@ -232,16 +243,16 @@ body {
 
 .mapMapperTitleOverview,
 .mapDifficultyTitleOverview {
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
     font-size: 10px;
-    margin-left: 7px;
+    margin-left: 13px;
 }
 
 .mapMapperOverview,
 .mapDifficultyOverview {
-    font-family: "Sora-Regular";
+    font-family: "Nohemi-Regular";
     font-size: 10px;
-    margin-left: 7px;
+    margin-left: 13px;
 }
 
 .mapDifficultyOverview {
@@ -255,12 +266,12 @@ body {
     position: absolute;
     top: 0px;
     left: 0px;
-    width: inherit;
+    width: 97%;
     height: inherit;
     display: flex;
     justify-content: end;
     align-items: end;
-    font-family: 'Sora-ExtraBold';
+    font-family: 'Nohemi-ExtraBold';
     color: white;
     font-size: 54px;
     margin-top: 14px;
@@ -274,8 +285,9 @@ body {
     width: inherit;
     height: inherit;
     z-index: 1;
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0));
+    background-image: linear-gradient(to right, rgb(239, 201, 198), rgba(239, 201, 198, 0.8), rgba(239, 201, 198, 0.6), rgba(239, 201, 198, 0.2));
     ;
+    border-radius: 30px;
 }
 
 .mapSourceOverview {
@@ -289,6 +301,7 @@ body {
     object-position: center;
     filter: brightness(50%);
     /* background-image: url(../../_shared_assets/design/main_banner.png); */
+    border-radius: 30px;
 }
 
 .mapWin {
@@ -301,12 +314,13 @@ body {
     flex-direction: row-reverse;
     justify-content: center;
     align-items: center;
-    font-family: 'Sora-ExtraBold';
-    color: black;
+    font-family: 'Nohemi-ExtraBold';
+    color: #5f3a39;
     background-color: white;
     z-index: 2;
     opacity: 0;
     transition: ease-in-out 500ms;
+    border-radius: 15px;
 }
 
 .mapPlayerText {
@@ -315,19 +329,21 @@ body {
 
 .mapWinText {
     font-size: 17px;
+    color: #5f3a39;
 }
 
 .mapPickIcon {
     position: absolute;
     top: 34.5px;
-    left: -66px;
-    width: 598px;
+    left: -81px;
+    width: 628px;
     height: 26px;
     object-fit: cover;
     object-position: center;
     z-index: 2;
     opacity: 0;
     transition: 500ms ease-in-out;
+    color: #5f3a39;
 }
 
 .mapBanContainer {
@@ -343,22 +359,21 @@ body {
     background-color: rgba(0, 0, 0, 0.75);
     opacity: 0;
     transition: 500ms ease-in-out;
+    border-radius: 30px;
 }
 
 .mapBanPlayer {
-    height: 50px;
     width: 50px;
-    border-radius: 50px;
-    border: 4px solid white;
-    object-fit: cover;
+    object-fit: contain;
     object-position: center;
     margin-right: 10px;
+    border-radius: 30px;
 }
 
 .mapBanText {
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
     font-size: 30px;
-    color:white;
+    color:#edbfbb;
 }
 
 .mapPickText {
@@ -367,7 +382,7 @@ body {
     left: 5px;
     z-index: 4;
     font-size: 16px;
-    font-family: "Sora-Bold";
+    font-family: "Nohemi-Bold";
     border-radius: 10px;
     width: fit-content;
     height: fit-content;
@@ -375,7 +390,7 @@ body {
     padding-block: 4px;
     box-shadow: 2px -2.5px 4px rgba(0, 0, 0, 0.5);
     background-color: rgba(255, 255, 255, 0.75);
-    color: black;
+    color: #5f3a39;
     opacity: 0;
     transition: 500ms ease-in-out;
 }
@@ -500,12 +515,12 @@ body {
     /* transform: translateY(1080px); */
     opacity: 0;
     z-index: 2;
-    color: white;
+    color: #5f3a39;
 }
 
 #upcomingContainer {
     position: absolute;
-    top: 150px;
+    top: 120px;
     left: 90px;
     height: fit-content;
     width: 1750px;
@@ -518,9 +533,10 @@ body {
     width: inherit;
     display: flex;
     justify-content: space-between;
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
     font-size: 150px;
     margin-top: -30px;
+    color: #5f3a39;
 }
 
 #upcomingPick {
@@ -557,15 +573,16 @@ body {
     left: 30px;
     display: flex;
     flex-direction: column;
+    color: white;
 }
 
 #upcomingSongText {
-    font-family: "Sora-Bold";
+    font-family: "Nohemi-Bold";
     font-size: 48px;
 }
 
 #upcomingArtistText {
-    font-family: "Sora-Light";
+    font-family: "Nohemi-Light";
     font-size: 27px;
 }
 
@@ -582,7 +599,7 @@ body {
 
 #upcomingCustomTag,
 #upcomingCollabTag {
-    font-family: "Sora-Light";
+    font-family: "Nohemi-Light";
     font-size: 24px;
     width: fit-content;
     display: flex;
@@ -610,17 +627,15 @@ body {
     align-items: center;
     justify-content: end;
     width: 250px;
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
     font-size:30px;
     color:white;
 }
 
 #upcomingPickPlayerSource {
     height: 50px;
-    width: 50px;
-    border-radius: 50px;
-    border: 4px solid white;
-    object-fit: cover;
+    border-radius: 30px;
+    object-fit: contain;
     object-position: center;
     margin-left: 10px;
 }
@@ -630,13 +645,14 @@ body {
     display: flex;
     padding-inline: 50px;
     padding-block: 35px;
-    border: 4px solid white;
+    border: 4px solid #5f3a39;
 }
 
 .upcomingDetailsColumn {
     display: flex;
     flex-direction: column;
     width: fit-content;
+    color: #5f3a39;
 }
 
 .upcomingStats {
@@ -644,7 +660,7 @@ body {
 }
 
 .upcomingDetailsText {
-    font-family: "Sora-Bold";
+    font-family: "Nohemi-Bold";
     font-size: 31px;
     margin-right: 20px;
 }
@@ -673,12 +689,12 @@ body {
 }
 
 .upcomingDetailsText2 {
-    font-family: "Sora-ExtraBold";
-    font-size: 13.5px;
+    font-family: "Nohemi-ExtraBold";
+    font-size: 20px;
 }
 
 .upcomingDetailsStats2 {
-    font-size: 13.5px;
+    font-size: 20px;
 }
 
 /* MATCH FOREGROUND */
@@ -738,7 +754,7 @@ body {
 }
 
 #matchPickId {
-    font-family: "Sora-Bold";
+    font-family: "Nohemi-Bold";
     color:white;
     z-index:4;
     font-size:64px;
@@ -747,7 +763,7 @@ body {
 }
 
 .matchSongStatContainer {
-    color:white;
+    color:#5f3a39;
     display:flex;
     z-index:4;
     /* flex-direction: column; */
@@ -756,7 +772,7 @@ body {
 }
 
 .matchSongStatText {
-    font-family:"Sora-Bold";
+    font-family:"Nohemi-Bold";
     font-size:20px;
 }
 
@@ -769,10 +785,11 @@ body {
     margin-left:15px;
     display:flex;
     flex-direction: column;
-    width:400px;
+    width:480px;
     height:fit-content;
     overflow:hidden;
     position:relative;
+    transform: translateY(-5px);
 }
 
 #matchSongPart1 {
@@ -781,25 +798,31 @@ body {
 }
 
 #matchSongTitle {
-    font-family:"Sora-Light";
+    font-family:"Nohemi-Light";
     font-size:27px;
     margin-top:6px;
     white-space:nowrap;
     width:fit-content;
+    height:35px;
+    display:flex;
+    align-items: center;
 }
 
 #matchSongTitleDelay {
-    font-family:"Sora-Light";
+    font-family:"Nohemi-Light";
     font-size:27px;
-    margin-top:6px;
+    /* padding-top: 6px; */
     display:none;
+    height:35px;
     white-space:nowrap;
     position:absolute;
     width:fit-content;
+    display:flex;
+    align-items: center;
 }
 
 #matchArtistTitle {
-    font-family:"Sora-Light";
+    font-family:"Nohemi-Light";
     font-size:15px;
 }
 
@@ -818,7 +841,7 @@ body {
     transition: 500ms ease-in-out;
     opacity: 0;
     /* display:none; */
-    /* transform:translateY(-32px); */
+    transform:translateY(3px);
     position:absolute;
     height:70px;
     /* display: grid;
@@ -848,8 +871,8 @@ body {
 }
 
 .matchSubtitle {
-    font-family:"Sora-Bold";
-    font-size:12px;
+    font-family:"Nohemi-Bold";
+    font-size:14px;
 }
 
 #matchMapperTitle, #matchDifficultyTitle {
@@ -860,13 +883,14 @@ body {
 }
 
 #matchStage {
-    font-family:"Sora-Bold";
-    font-size:30px;
+    /* font-family:"Nohemi-Bold"; */
+    font-size:48px;
+    font-weight: 600;
     position:absolute;
     top:0px;
     right:0px;
     height:100px;
-    width:350px;
+    width:300px;
     display:flex;
     align-items: center;
     justify-content: center;
@@ -879,9 +903,9 @@ body {
     left: 0px;
     width:inherit;
     height:148px;
-    background-color: white;
+    background-color: #edbfbb;
     display:flex;
-    color:black;
+    color:#5f3a39;
     justify-content: space-between;
 }
 
@@ -901,44 +925,49 @@ body {
 .bottomPfp {
     height:148px;
     width:148px;
-    background-color: #7E00FF;
+    /* margin: 10px; */
+    background-color: #edbfbb;
     object-fit: contain;
     object-position: center;
 }
 
-#bottomP1Text {
+#bottomT1Text {
     position:absolute;
     top: -53px;
     left: 18px;
-    background-color: white;
-    font-family:"Sora-ExtraBold";
+    color:#5f3a39;
+    background-color: #edbfbb;
+    font-family:"Nohemi-ExtraBold";
     font-size:38px;
     width:98px;
     height:41px;
     padding-right:15px;
-    padding-top:3px;
+    padding-bottom:6px;
     display:flex;
     align-items: center;
     justify-content: end;
+    border-radius:20px;
 }
 
-#bottomP2Text {
+#bottomT2Text {
     position:absolute;
     top: -53px;
     right: 18px;
-    background-color: white;
-    font-family:"Sora-ExtraBold";
+    color:#5f3a39;
+    background-color: #edbfbb;
+    font-family:"Nohemi-ExtraBold";
     font-size:38px;
     width:98px;
     height:41px;
     padding-left:15px;
-    padding-top:3px;
+    padding-bottom:6px;
     display:flex;
     align-items: center;
     justify-content: start;
+    border-radius:20px;
 }
 
-#bottomP1Pick {
+#bottomT1Pick {
     position:absolute;
     top: -53px;
     right: 0;
@@ -948,7 +977,7 @@ body {
     transition:500ms ease-in-out;
 }
 
-#bottomP2Pick {
+#bottomT2Pick {
     position:absolute;
     top: -53px;
     left: 0;
@@ -961,16 +990,17 @@ body {
 }
 
 .bottomPickText {
-    font-family:"Sora-ExtraBold";
-    color:white;
+    font-family:"Nohemi-ExtraBold";
+    color: #5f3a39;
     font-size:30px;
     margin-inline:13px;
 }
 
 .bottomPickArrow {
-    font-family:"Sora-ExtraBold";
-    color:white;
+    font-family:"Nohemi-ExtraBold";
+    color:#5f3a39;
     font-size:57px;
+    margin-bottom:15px;
 }
 
 #bottomPlayerOneDetails {
@@ -1014,15 +1044,15 @@ body {
 .score {
     width:34px;
     height:34px;
-    border: 4px solid rgb(0, 0, 0);
-    background-color: rgba(0,0,0,0);
+    border: 4px solid rgb(95, 58, 57);
+    background-color: rgba(95, 58, 57,0);
     margin-inline: 3px;
     border-radius: 25px;
     transition: 250ms ease-in-out;
 }
 
 .scoreFill {
-    background-color: rgba(0,0,0,1);
+    background-color: rgba(95, 58, 57,1);
 }
 
 #bottomScoreLeft>.score.scoreFillAnimate {
@@ -1042,14 +1072,14 @@ body {
 }
 
 #bottomPlayerOneName, #bottomPlayerTwoName {
-    font-family:"Sora-ExtraBold";
-    font-size:30px;
+    font-family:"Aoyagirei";
+    font-size:36px;
 }
 
 #bottomPlayerOnePick,#bottomPlayerTwoPick {
-    font-family: "Sora-Bold";
-    color:white;
-    background-color: black;
+    font-family: "Nohemi-Bold";
+    color:#edbfbb;
+    background-color: #5f3a39;
     border-radius: 25px;
     padding-inline: 15px;
     padding-block: 3px;
@@ -1074,7 +1104,7 @@ body {
     left:0px;
     height:inherit;
     width:728px;
-    background-color: rgb(255, 255, 255);
+    background-color: #edbfbb;
     z-index:3;
     transform: translateY(148px);
 }
@@ -1097,19 +1127,17 @@ body {
 }
 
 #bottomResultsTop {
-    font-family:"Sora-ExtraBold";
-    font-size:36px;
-    margin-top:12px;
-    margin-bottom: -16px;
+    font-family:"Aoyagirei";
+    font-size:100px;
 }
 
 #bottomResultsBottom {
-    font-family:"Sora-ExtraBold";
+    font-family:"Nohemi-ExtraBold";
     font-size:72px;
 }
 
 #bottomSongProgressText {
-    font-family:"Sora-ExtraBold";
+    font-family:"Nohemi-ExtraBold";
     font-size:16px;
     margin-bottom:24px;
 }
@@ -1119,7 +1147,7 @@ body {
     justify-content: space-between;
     align-items: end;
     width: 550px;
-    font-family:"Sora-ExtraBold";
+    font-family:"Nohemi-ExtraBold";
     font-size:16px;
     margin-bottom:5px;
 }
@@ -1137,7 +1165,7 @@ body {
     position:relative;
     width: 550px;
     height:11px;
-    border: solid 2px black;
+    border: solid 2px #5f3a39;
     border-radius:20px; 
 }
 
@@ -1147,16 +1175,16 @@ body {
     left:0px;
     height:inherit;
     width:200px;
-    background-color: black;
+    background-color: #5f3a39;
 }
 
 #bottomChatText {
-    font-family:"Sora-Bold";
+    font-family:"Aoyagirei";
     font-size:57px;
-    color:white;
+    color:rgba(255,255,255,0.75);
     position:absolute;
-    bottom:-15px;
-    right:-1px;
+    bottom:0px;
+    right:-18px;
 }
 
 #effectsOverlay {
@@ -1182,7 +1210,7 @@ body {
     left:-100px;
     height:1080px;
     width:100px;
-    box-shadow: 120px 0 200px rgba(255, 255, 255, 0.5); /* Left glow */
+    box-shadow: 120px 0 200px rgba(0, 0, 0, 0.5); /* Left glow */
 }
 
 #effectsRightShimmer {
@@ -1191,7 +1219,7 @@ body {
     right:-100px;
     height:1080px;
     width:100px;
-    box-shadow: -120px 0 200px rgba(255, 255, 255, 0.5); /* Left glow */
+    box-shadow: -120px 0 200px rgba(0, 0, 0, 0.5); /* Left glow */
 }
 
 /* MATCH */
@@ -1213,6 +1241,7 @@ body {
     display:flex;
     justify-content: space-between;
     opacity:0;
+    /* background-color: #0fa625; */
 }
 
 #matchWinningBoard {
@@ -1248,9 +1277,9 @@ body {
     height: 34px;
     justify-content: center;
     align-items: center;
-    font-family: 'Sora-ExtraBold';
-    color: black;
-    background-color: white;
+    font-family: 'Nohemi-ExtraBold';
+    color: #5f3a39;
+    background-color: #edbfbb;
     z-index:2;
     opacity:0;
     transition: 500ms ease-in-out;
@@ -1265,9 +1294,9 @@ body {
     height: 34px;
     justify-content: center;
     align-items: center;
-    font-family: 'Sora-ExtraBold';
-    color: black;
-    background-color: white;
+    font-family: 'Nohemi-ExtraBold';
+    color: #5f3a39;
+    background-color: #edbfbb;
     z-index:2;
     opacity:0;
     transition: 500ms ease-in-out;
@@ -1286,7 +1315,7 @@ body {
 }
 
 #matchOneScoreContainer {
-    background-color: white;
+    background-color: #edbfbb;
     display:flex;
     align-items: center;
     justify-content: end;
@@ -1294,10 +1323,10 @@ body {
 }
 
 #matchOneScore {
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
     font-size:57px;
     margin-right:28px;
-    color:black;
+    color:#5f3a39;
     width:fit-content;
     z-index:0;
     transition: 1500ms cubic-bezier(0.000, 0.125, 0.000, 1.005);
@@ -1306,17 +1335,17 @@ body {
 }
 
 #matchTwoScoreContainer {
-    background-color: white;
+    background-color: #edbfbb;
     display:flex;
     align-items: center;
     width:400px;
 }
 
 #matchTwoScore {
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
     font-size:57px;
     margin-left:28px;
-    color:black;
+    color:#5f3a39;
     width:fit-content;
     z-index:0;
     transition: 1500ms cubic-bezier(0.000, 0.125, 0.000, 1.005);
@@ -1328,7 +1357,9 @@ body {
     align-items: center;
     width:115px;
     height:inherit;
-    font-family: "Sora-ExtraBold";
+    color: #5f3a39;
+    margin-top:-12px;
+    font-family: "Nohemi-ExtraBold";
     font-size:72px;
     opacity:0;
 }
@@ -1354,13 +1385,14 @@ body {
 
 #matchScoreLeftContent {
     height:29px;
-    background-color: white;
+    background-color: #5f3a39;
     border-radius: 20px 0px 0px  20px;
     transition: 250ms ease-in-out;
 }
 
 #matchScoreLeftText {
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
+    color: #5f3a39;
     font-size:30px;
     margin-top:8px;
     transition: 250ms ease-in-out;
@@ -1385,15 +1417,16 @@ body {
 
 #matchScoreRightContent {
     height:29px;
-    background-color: white;
+    background-color: #5f3a39;
     border-radius: 0px 20px 20px 0px;
     transition: 250ms ease-in-out;
 }
 
 #matchScoreRightText {
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
     font-size:30px;
     margin-top:8px;
+    color: #5f3a39;
     transition: 250ms ease-in-out;
     text-align: center;
     width:fit-content;
@@ -1409,24 +1442,32 @@ body {
     height:720px;
     display:flex;
     opacity:0;
+    display:flex;
+    justify-content: center;
 }
 
-#matchClientOne, #matchClientTwo {
+#matchClientLeft, #matchClientRight {
     width:960px;
-    height:inherit;
+    display:flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.matchClient {
+    width:960px;
+    height:360px;
     position:relative;
     display:flex;
-    justify-content: space-between;
     align-items: end;
-    border: 4px solid white;
+    transition:500ms ease-in-out;
+    /* border: 4px solid white;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
+    -webkit-box-sizing: border-box; */
 }
 
-#matchClientTwoDetails, #matchClientOneDetails {
+.matchClientDetails {
     transition:500ms ease-in-out;
-    opacity:0;
     position:absolute;
     left:0px;
     top:0px;
@@ -1438,60 +1479,49 @@ body {
     z-index:2;
 }
 
-.matchClientLeft {
+.matchClientLeft, .matchClientRight {
     display:flex;
     flex-direction: column;
-    margin-left:19px;
-    margin-bottom:28px;
-}
-
-.matchClient100, .matchClientMiss, .matchClientUr {
-    background-color: white;
-    height:53px;
-    width:255px;
-    display:flex;
+    margin-inline:19px;
     justify-content: space-between;
+    height: 360px;
+}
+
+.matchClientRight {
+    align-items: end;
+}
+
+.matchClient100, .matchClientMiss, .matchClientUr, .matchClientName {
+    /* background-color: #edbfbb; */
+    height:33px;
+    width:fit-content;
     align-items: center;
-    font-family: "Sora-ExtraBold";
-    font-size:36px;
-    color:black;
-    margin-top:8px;
+    font-family: "Nohemi-ExtraBold";
+    font-size:32px;
+    color:#edbfbb;
     z-index:2;
+    margin-block:10px;
+    margin-inline: 10px;
+    display:flex;
 }
 
-.matchClientUr {
-    margin-right:19px;
-    margin-bottom:28px;
+.matchClientName {
+    justify-content: center;
+    align-items: center;
+    text-align: right;
 }
 
-.matchClientText {
-    margin-right:18px;
-}
-
-.matchClient100Text {
-    margin-left:18px;
-    color:#FF9000;
-}
-
-.matchClientMissText {
-    margin-left:18px;
-    color:#FF0000;
-}
-
-.matchClientUrText {
-    margin-left:18px;
-}
-
-#matchClientOneMissGlow, #matchClientTwoMissGlow {
+.matchClientMissGlow {
     box-shadow:inset 50px 0 200px rgba(184, 41, 41, 0.7), /* Left Glow */
     inset -50px 0 200px rgba(184, 41, 41, 0.7); /* Right Glow */
     position:absolute;
-    top:2px;
-    left:2px;
-    width:952px;
-    height:712px;
+    top:0px;
+    left:0px;
+    width:960px;
+    height:360px;
     z-index:0;
     opacity:0;
+    border-radius: 30px;
 }
 
 /* CHATS */
@@ -1501,7 +1531,7 @@ body {
     left:0px;
     height:inherit;
     width:728px;
-    background-color: black;
+    background-color: #5f3a39;
     display:flex;
     align-items: center;
 }
@@ -1577,7 +1607,7 @@ body {
 }
 
 #introVSText {
-    font-family:"Sora-ExtraBold";
+    font-family:"Nohemi-ExtraBold";
     font-size:285px;
     margin-inline: 160px;
 }
@@ -1587,15 +1617,18 @@ body {
     flex-direction: column;
     width:300px;
     height:fit-content;
+    border-radius: 20px;
+    overflow: hidden;
 }
 
 .introPlayerPfp {
     object-fit: contain;
     object-position: center;
-    border: solid 8px white;
+    border: solid 50px #edbfbb;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
+    background-color: #edbfbb;
     width:300px;
     height:300px;
 }
@@ -1605,15 +1638,16 @@ body {
     width:300px;
     display:flex;
     flex-direction: column;
-    background-color: white;
-    color:black;
     justify-content: center;
+    background-color: #edbfbb;
+    color:#5f3a39;
     align-items: center;
     padding-block: 10px;
+    margin-top:-20px;
 }
 
 .introPlayerName {
-    font-family:"Sora-ExtraBold";
+    font-family:"Aoyagirei";
     font-size:30px;
     text-align: center;
     width:90%;
@@ -1628,8 +1662,24 @@ body {
     justify-content: space-between;
 }
 
+.introRosterContainer {
+    width:90%;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top:5px;
+    height:100px;
+    justify-content: center;
+}
+
 .introPlayerText {
-    font-family:"Sora-Bold";
+    font-family:"Nohemi-Bold";
+}
+
+#introPlayerTwoRoster, #introPlayerOneRoster {
+    text-align: center;
+    overflow-wrap: break-word;
+    white-space: normal;
 }
 
 #matchHistoryScene {
@@ -1647,7 +1697,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
     font-size:48px;
     color:black;
     background-color: white;
@@ -1681,6 +1731,7 @@ body {
 #matchHistoryLeftPlayerSource {
     border:solid 4px white;
     object-fit: contain;
+    background-color: white;
     object-position: center;
     width:82px;
     height:82px;
@@ -1702,7 +1753,7 @@ body {
 }
 
 #matchHistoryLeftPlayerName {
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
     font-size:30px;
     margin-left:13px;
 }
@@ -1733,6 +1784,7 @@ body {
 #matchHistoryRightPlayerSource {
     border:solid 4px white;
     object-fit: contain;
+    background-color: white;
     object-position: center;
     width:82px;
     height:82px;
@@ -1755,7 +1807,7 @@ body {
 }
 
 #matchHistoryRightPlayerName {
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
     font-size:30px;
     margin-right:13px;
 }
@@ -1786,7 +1838,7 @@ body {
 }
 
 .historyRoundLeft {
-    font-family:"Sora-ExtraBold";
+    font-family:"Nohemi-ExtraBold";
     font-size:57px;
     width: 200px;
     height:54px;
@@ -1798,7 +1850,7 @@ body {
 .historyPlayerLeft {
     background-color: white;
     color:black;
-    font-family:"Sora-ExtraBold";
+    font-family:"Nohemi-ExtraBold";
     font-size:30px;
     width: 370px;
     height:54px;
@@ -1810,7 +1862,8 @@ body {
 
 .historySourceLeft {
     border:solid 4px white;
-    object-fit: cover;
+    object-fit: contain;
+    background-color: white;
     object-position: center;
     width:54px;
     height:54px;
@@ -1830,7 +1883,7 @@ body {
 .historyWinTextLeft {
     background-color: white;
     color:black;
-    font-family:"Sora-ExtraBold";
+    font-family:"Nohemi-ExtraBold";
     font-size:22px;
     width: 93px;
     height:23px;
@@ -1840,7 +1893,7 @@ body {
 }
 
 .historyWinScoreLeft {
-    font-family:"Sora-ExtraBold";
+    font-family:"Nohemi-ExtraBold";
     font-size:30px;
     margin-left:-2px;
     margin-top:2px;
@@ -1856,7 +1909,7 @@ body {
 }
 
 .historyRoundRight {
-    font-family:"Sora-ExtraBold";
+    font-family:"Nohemi-ExtraBold";
     font-size:57px;
     width: 200px;
     height:54px;
@@ -1868,7 +1921,7 @@ body {
 .historyPlayerRight {
     background-color: white;
     color:black;
-    font-family:"Sora-ExtraBold";
+    font-family:"Nohemi-ExtraBold";
     font-size:30px;
     width: 370px;
     height:54px;
@@ -1880,7 +1933,8 @@ body {
 
 .historySourceRight {
     border:solid 4px white;
-    object-fit: cover;
+    object-fit: contain;
+    background-color: white;
     object-position: center;
     width:54px;
     height:54px;
@@ -1901,7 +1955,7 @@ body {
 .historyWinTextRight {
     background-color: white;
     color:black;
-    font-family:"Sora-ExtraBold";
+    font-family:"Nohemi-ExtraBold";
     font-size:22px;
     width: 93px;
     height:23px;
@@ -1911,7 +1965,7 @@ body {
 }
 
 .historyWinScoreRight {
-    font-family:"Sora-ExtraBold";
+    font-family:"Nohemi-ExtraBold";
     font-size:30px;
     margin-right:-2px;
     margin-top:2px;
@@ -1947,9 +2001,9 @@ body {
 }
 
 #resultsStaticText {
-    background-color: white;
-    color:black;
-    font-family: "Sora-ExtraBold";
+    background-color: #edbfbb;
+    color:#5f3a39;
+    font-family: "Aoyagirei";
     font-size:47px;
     width:335px;
     display:flex;
@@ -1973,25 +2027,25 @@ body {
     display:flex;
     margin-inline: 20px;
     align-items: center;
+    transform: translateY(-10px);
 }
 
 .resultText {
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-Regular";
     font-size:72px;
 }
 
 .resultScorelineSource {
     margin-inline:30px;
-    height:58px;
     width:58px;
-    border:4px solid white;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
+    border-radius: 30px;
 }
 
 .resultScorelineText {
-    font-family: "Sora-ExtraBold";
+    font-family: "Aoyagirei";
     font-size:30px;
 }
 
@@ -2028,14 +2082,15 @@ body {
     justify-content: center;
     align-items: center;
     position:relative;
+    overflow: hidden;
 }
 
 .resultContainerPick {
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
     font-size:42px;
-    color:white;
+    color:#edbfbb;
     z-index:2;
-    border:4px solid white;
+    border:4px solid #edbfbb;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
@@ -2044,6 +2099,7 @@ body {
     display:flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
 }
 
 .resultContainerSource {
@@ -2052,10 +2108,11 @@ body {
     position:absolute;
     top:0px;
     left:0px;
-    background-color: black;
+    background-color: #5f3a39;
     object-fit: cover;
     filter: brightness(50%) blur(4px);
     z-index:1;
+    overflow: hidden;
 }
 
 .resultContainerBottom {
@@ -2067,24 +2124,24 @@ body {
 .resultContainerPlayer {
     width:39px;
     height:39px;
-    background-color: black;
+    background-color: #5f3a39;
     display: flex;
     justify-content: center;
     align-items: center;
-    color:white;
-    font-family: "Sora-ExtraBold";
+    color:#edbfbb;
+    font-family: "Nohemi-ExtraBold";
     font-size:24px;
 }
 
 .resultContainerText {
     width:105px;
     height:39px;
-    background-color: white;
+    background-color: #edbfbb;
     display: flex;
     justify-content: center;
     align-items: center;
-    color:black;
-    font-family: "Sora-ExtraBold";
+    color:#5f3a39;
+    font-family: "Nohemi-ExtraBold";
     font-size:32px;
 }
 
@@ -2093,24 +2150,26 @@ body {
     align-items: center;
     width:fit-content;
     margin-right:20px;
+    color:#5f3a39;
 }
 
 .resultPlayerPickSource {
-    height:42px;
     width:42px;
-    border:4px solid white;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
-    border-radius: 25px;
 }
 
 .resultPlayerText {
-    color:white;
-    font-family: "Sora-ExtraBold";
+    color:#5f3a39;
+    font-family: "Nohemi-ExtraBold";
     font-size:24px;
     margin-left:10px;
     margin-right:20px;
+}
+
+#resultPlayerTextOne, #resultPlayerTextTwo {
+    font-family: "Aoyagirei";
 }
 
 #resultPickContainer {
@@ -2146,12 +2205,12 @@ body {
     left:75px;
     width:113px;
     height:44px;
-    background-color: white;
-    color:black;
+    background-color: #edbfbb;
+    color:#9c2222;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
     font-size:36px;
 }
 
@@ -2161,12 +2220,12 @@ body {
     left:75px;
     width:113px;
     height:44px;
-    background-color: white;
-    color:black;
+    background-color: #edbfbb;
+    color:#5f3a39;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
     font-size:36px;
 }
 
@@ -2174,7 +2233,7 @@ body {
     position: absolute;
     right:0px;
     bottom:-20px;
-    font-family: "Sora-ExtraBold";
+    font-family: "Nohemi-ExtraBold";
     font-size:78px;
     text-align: right;
 }
@@ -2214,7 +2273,7 @@ body {
 }
 
 .title {
-    font-family: "Sora-Regular";
+    font-family: "Nohemi-Regular";
     color: white;
     font-size: 24px;
     user-select: none;
@@ -2230,7 +2289,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: "Sora-Bold";
+    font-family: "Nohemi-Bold";
     color: rgb(0, 0, 0);
     font-size: 32px;
     padding-top: 5px;
@@ -2496,34 +2555,34 @@ body {
 
 @keyframes scrollTextDelay {
 	0% {
-	  transform: translateX(100%) translateY(-40px);
+	  transform: translateX(100%) translateY(-35px);
 	}
 	100% {
-	  transform: translateX(-100%) translateY(-40px);
+	  transform: translateX(-100%) translateY(-35px);
 	}
 }
 
 @keyframes addScore {
     0% {
         transform: scale(1);
-        background-color: rgba(0,0,0,0);
+        background-color: rgba(95, 58, 57,0);
     }
     50% {
         transform: scale(1.2);
-		background-color: rgba(0,0,0,1);
+		background-color: rgba(95, 58, 57,1);
     }
     100% {
         transform: scale(1);
-		background-color: rgba(0,0,0,1);
+		background-color: rgba(95, 58, 57,1);
     }
 }
 
 @keyframes removeScore {
 	from {
-		background-color: rgba(0,0,0,1);
+		background-color: rgba(95, 58, 57,1);
 	}
 	to {
-        background-color: rgba(0,0,0,0);
+        background-color: rgba(95, 58, 57,0);
 	}
 }
 
@@ -2602,22 +2661,22 @@ body {
 
 @keyframes winBar {
     0% {
-        background-color: black;
+        background-color: #5f3a39;
         width: 0%;
     }
     100% {
-        background-color: black;
+        background-color: #5f3a39;
         width: 100%;
     }
 }
 
 @keyframes loseBar {
     0% {
-        background-color: white;
+        background-color: #edbfbb;
         width: 0%;
     }
     100% {
-        background-color: white;
+        background-color: #edbfbb;
         width: 100%;
     }
 }

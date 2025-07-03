@@ -1,5 +1,34 @@
+// FLAGS //////////////////////////////////////////////////////////////////
+let teamFlags = [
+    "AC", "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT", "AU", "AW", "AX", "AZ",
+    "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ",
+    "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ",
+    "DE", "DJ", "DK", "DM", "DO", "DZ",
+    "EC", "EE", "EG", "EH", "ER", "ES", "ET",
+    "FI", "FJ", "FM", "FO", "FR",
+    "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GT", "GU", "GW", "GY",
+    "HK", "HM", "HN", "HR", "HT", "HU",
+    "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT",
+    "JE", "JM", "JO", "JP",
+    "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ",
+    "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY",
+    "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ",
+    "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ",
+    "OM",
+    "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PW", "PY",
+    "QA",
+    "RE", "RO", "RS", "RU", "RW",
+    "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ",
+    "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ",
+    "UA", "UG", "UM", "US", "UY", "UZ",
+    "VA", "VC", "VE", "VG", "VI", "VN", "VU",
+    "WF", "WS",
+    "YE", "YT",
+    "ZA", "ZM", "ZW"
+];
+
 // SOCKET /////////////////////////////////////////////////////////////////
-let socket = new ReconnectingWebSocket("ws://" + location.host + "/ws");
+let socket = new ReconnectingWebSocket("ws://localhost:24050/ws");
 socket.onopen = () => {
     console.log("Successfully Connected");
 };
@@ -16,6 +45,7 @@ let beatmapSet = [];
 let beatmapsIds = [];
 let stages = [];
 let seedData = [];
+let addFlags = [];
 let currentStage;
 (async () => {
     try {
@@ -35,6 +65,10 @@ let currentStage;
                 stages.push(stage);
             }
         });
+        const jsonData4 = await $.getJSON("../../_data/additional_flags.json");
+        jsonData4.map((flags) => {
+            addFlags.push(flags);
+        });
         initialized = true;
     } catch (error) {
         console.error("Could not read JSON file", error);
@@ -48,19 +82,215 @@ console.log(stages);
 console.log(currentStage);
 
 // API /////////////////////////////////////////////////////////////////
-const file = [];
-let api;
-(async () => {
-    try {
-        const jsonData = await $.getJSON("../../_data/api.json");
-        jsonData.map((num) => {
-            file.push(num);
-        });
-        api = file[0].api;
-    } catch (error) {
-        console.error("Could not read JSON file", error);
+const BASE = "https://lous-gts-proxy.louscmh.workers.dev";
+
+// CLASSES ///////////////////////////////////////////////////////////////
+class ScoreTracker {
+    constructor() {
+        this.currentState = 0;
+        this.leftClients = [];
+        this.rightClients = [];
     }
-})();
+    addClient(client,isLeft) {
+        if (isLeft) {
+            this.leftClients.push(client);
+        } else {
+            this.rightClients.push(client);
+        }
+    }
+    updateClients(data) {
+        data.map(async(clientData,index) => {
+            // console.log(index);
+            const client = index < 2 ? this.leftClients[index] : this.rightClients[index-2];
+            if (client) {
+                client.updateMiss(clientData.gameplay.combo.current);
+                client.updateGood(clientData.gameplay.accuracy);
+                client.updateUr(clientData.gameplay.score);
+                client.updateScore(clientData.gameplay.score);
+                client.updateCombo(clientData.gameplay.combo.current);
+                client.updatePlayer(clientData.spectating.name);
+            }
+        })
+    }
+    getScores() {
+        if (this.currentState != 3) return null,null;
+        let left = 0;
+        let right = 0;
+        this.leftClients.map(async(client) => {
+            left += client.score ?? 0;
+        })
+        this.rightClients.map(async(client) => {
+            right += client.score ?? 0;
+        })
+        return [left,right];
+    }
+    updateState(state) {
+        this.currentState = state;
+    }
+    reset() {
+        this.leftClients.map(client => {
+            client.reset();
+        })
+        this.rightClients.map(client => {
+            client.reset();
+        })
+    }
+    resultHide() {
+        this.leftClients.map(client => {
+            client.hideAllButUr();
+        })
+        this.rightClients.map(client => {
+            client.hideAllButUr();
+        })
+    }
+}
+
+class Client {
+    constructor(clientNumber) {
+        this.animationScore;
+        this.clientNumber = clientNumber;
+        this.miss;
+        this.good;
+        this.ur;
+        this.combo;
+        this.player;
+    }
+    generate() {
+
+        this.matchClientDetails = document.createElement("div");
+        this.matchClientMissGlow = document.createElement("div");
+        this.matchClientLeft = document.createElement("div");
+        this.matchClientRight = document.createElement("div");
+        this.matchClient100Container = document.createElement("div");
+        this.matchClient100Text = document.createElement("div");
+        this.matchClient100 = document.createElement("div");
+        this.matchClientMissContainer = document.createElement("div");
+        this.matchClientMissText = document.createElement("div");
+        this.matchClientMiss = document.createElement("div");
+        this.matchClientUrContainer = document.createElement("div");
+        this.matchClientUr = document.createElement("div");
+        this.matchClientNameContainer = document.createElement("div");
+        this.matchClientName = document.createElement("div");
+        
+        this.matchClientDetails.id = `${this.clientNumber}CLIENTDETAILS`;
+        this.matchClientMissGlow.id = `${this.clientNumber}CLIENTMISSGLOW`;
+        this.matchClientLeft.id = `${this.clientNumber}CLIENTLEFT`;
+        this.matchClientRight.id = `${this.clientNumber}CLIENTRIGHT`;
+        this.matchClient100Container.id = `${this.clientNumber}CLIENT100CONT`;
+        this.matchClient100Text.id = `${this.clientNumber}CLIENT100TEXT`;
+        this.matchClient100.id = `${this.clientNumber}CLIENT100`;
+        this.matchClientMissContainer.id = `${this.clientNumber}CLIENTMISSCONT`;
+        this.matchClientMissText.id = `${this.clientNumber}CLIENTMISSTEXT`;
+        this.matchClientMiss.id = `${this.clientNumber}CLIENTMISS`;
+        this.matchClientUrContainer.id = `${this.clientNumber}CLIENTURCONT`;
+        this.matchClientUr.id = `${this.clientNumber}CLIENTUR`;
+        this.matchClientNameContainer.id = `${this.clientNumber}CLIENTNAMECONT`;
+        this.matchClientName.id = `${this.clientNumber}CLIENTNAME`;
+
+        this.matchClientDetails.setAttribute("class", "matchClientDetails");
+        this.matchClientMissGlow.setAttribute("class", "matchClientMissGlow");
+        this.matchClientLeft.setAttribute("class", "matchClientLeft");
+        this.matchClientRight.setAttribute("class", "matchClientRight");
+        this.matchClient100Container.setAttribute("class", "matchClient100");
+        this.matchClient100Text.setAttribute("class", "matchClient100Text");
+        this.matchClient100.setAttribute("class", "matchClientText");
+        this.matchClientMissContainer.setAttribute("class", "matchClientMiss");
+        this.matchClientMissText.setAttribute("class", "matchClientMissText");
+        this.matchClientMiss.setAttribute("class", "matchClientText");
+        this.matchClientUrContainer.setAttribute("class", "matchClientUr");
+        this.matchClientUr.setAttribute("class", "matchClientText");
+        this.matchClientNameContainer.setAttribute("class", "matchClientName");
+
+        this.matchClient100Text.innerHTML = "%";
+        this.matchClientMissText.innerHTML = "x";
+        this.matchClientName.innerHTML = "PLAYER";
+
+        document.getElementById(`matchClient${this.clientNumber}`).appendChild(this.matchClientDetails);
+
+        document.getElementById(this.matchClientDetails.id).appendChild(this.matchClientMissGlow);
+        document.getElementById(this.matchClientDetails.id).appendChild(this.matchClientLeft);
+        document.getElementById(this.matchClientDetails.id).appendChild(this.matchClientRight);
+        
+        document.getElementById(`${this.matchClientLeft.id}`).appendChild(this.matchClient100Container);
+        document.getElementById(`${this.matchClientLeft.id}`).appendChild(this.matchClientMissContainer);
+        document.getElementById(this.matchClientRight.id).appendChild(this.matchClientUrContainer);
+        document.getElementById(this.matchClientRight.id).appendChild(this.matchClientNameContainer);
+
+        document.getElementById(`${this.matchClient100Container.id}`).appendChild(this.matchClient100);
+        document.getElementById(`${this.matchClient100Container.id}`).appendChild(this.matchClient100Text);
+
+        document.getElementById(`${this.matchClientMissContainer.id}`).appendChild(this.matchClientMiss);
+        document.getElementById(`${this.matchClientMissContainer.id}`).appendChild(this.matchClientMissText);
+
+        document.getElementById(`${this.matchClientUrContainer.id}`).appendChild(this.matchClientUr);
+
+        document.getElementById(`${this.matchClientNameContainer.id}`).appendChild(this.matchClientName);
+
+        this.animationScore = {
+            matchClient100: new CountUp(`${this.clientNumber}CLIENT100`, 0, 0, 2, .2, { useEasing: true, useGrouping: true, separator: "", decimal: "." }),
+            matchClientMiss: new CountUp(`${this.clientNumber}CLIENTMISS`, 0, 0, 0, .2, { useEasing: true, useGrouping: true, separator: "", decimal: "." }),
+            matchClientUr: new CountUp(`${this.clientNumber}CLIENTUR`, 0, 0, 0, .2, { useEasing: true, useGrouping: true, separator: "", decimal: "." })
+        }
+    }
+    grayedOut() {
+        this.overlay.style.opacity = '1';
+    }
+    updateScore(score) {
+        if (score == this.score) return;
+        this.score = score;
+    }
+    updateMiss(miss) {
+        if (miss == this.miss) return;
+        this.miss = miss;
+        this.animationScore.matchClientMiss.update(this.miss);
+    }
+    updateGood(good) {
+        if (good == this.good) return;
+        this.good = good;
+        this.animationScore.matchClient100.update(this.good);
+    }
+    updateUr(ur) {
+        if (ur == this.ur) return;
+        this.ur = ur;
+        this.animationScore.matchClientUr.update(this.ur);
+    }
+    updateCombo(combo) {
+        if (combo == this.combo) return;
+        if (this.combo > 29 && combo < this.combo) this.flashMiss();
+        this.combo = combo;
+    }
+    flashMiss() {
+        let missFlash = document.getElementById(this.matchClientMissGlow.id);
+        missFlash.style.animation = "glow 1.5s ease-in-out";
+        setTimeout(function () {
+            missFlash.style.animation = "none";
+        }.bind(this), 1500);
+    }
+    updatePlayer(name) {
+        if (name == this.player) return;
+        const element = document.getElementById(this.matchClientName.id)
+        element.innerHTML = name;
+        adjustFont(element, 200, 32);
+        this.player = name;
+    }
+    hideAllButUr() {
+        this.matchClient100Container.style.opacity = 0;
+        this.matchClientMissContainer.style.opacity = 0;
+        this.matchClientUrContainer.style.opacity = 0;
+        this.matchClientNameContainer.style.opacity = 1;
+    }
+    reset() {
+        this.updateScore(0);
+        this.updateMiss(0);
+        this.updateGood(0);
+        this.updateUr(0);
+        this.updateCombo(0);
+        this.matchClient100Container.style.opacity = 1;
+        this.matchClientMissContainer.style.opacity = 1;
+        this.matchClientUrContainer.style.opacity = 1;
+        this.matchClientNameContainer.style.opacity = 1;
+    }
+}
 
 // PLACEHOLDER VARS /////////////////////////////////////////////////////////////////
 let generated = false;
@@ -80,7 +310,7 @@ socket.onmessage = async event => {
     let data = JSON.parse(event.data);
 
     if (!hasSetupBeatmaps) {
-        await setupBeatmaps();
+        setupBeatmaps();
         hasSetupBeatmaps = true;
     }
 
@@ -88,13 +318,15 @@ socket.onmessage = async event => {
 
     // NORMAL CODE
 
-    tempLeft = data.tourney.manager.teamName.left;
+    // tempLeft = data.tourney.manager.teamName.left;
+    tempLeft = "幻想の結界チーム";
 
     if (tempLeft != leftTeam && tempLeft != "" && !playersSetup) {
         leftTeam = tempLeft;
         playersSetup = true;
         setTimeout(function (event) {
-            matchManager.updatePlayerId([data.tourney.manager.teamName.left, data.tourney.manager.teamName.right])
+            // matchManager.updatePlayerId([data.tourney.manager.teamName.left, data.tourney.manager.teamName.right])
+            matchManager.updatePlayerId(["幻想の結界チーム", "禁呪の詠唱チーム"]);
         }, 150);
     }
 
@@ -102,7 +334,7 @@ socket.onmessage = async event => {
 
     matchManager.checkState(data.tourney.manager.ipcState);
     matchManager.gameplayManager.updateProgress(data);
-    matchManager.gameplayManager.updateClients(data.tourney.ipcClients, data.tourney.manager.bools.scoreVisible, data.tourney.manager.ipcState);
+    matchManager.gameplayManager.updateClients(data, data.tourney.manager.bools.scoreVisible, data.tourney.manager.ipcState);
     matchManager.updateScores(data);
     matchManager.updateChat(data);
     matchManager.debug();
@@ -156,12 +388,12 @@ class Beatmap {
         this.mapModpool = document.createElement("div");
         this.mapOverlay = document.createElement("div");
         this.mapSource = document.createElement("img");
-        this.mapWinP1 = document.createElement("div");
-        this.mapPlayerTextP1 = document.createElement("div");
-        this.mapWinTextP1 = document.createElement("div");
-        this.mapWinP2 = document.createElement("div");
-        this.mapPlayerTextP2 = document.createElement("div");
-        this.mapWinTextP2 = document.createElement("div");
+        this.mapWinT1 = document.createElement("div");
+        this.mapPlayerTextT1 = document.createElement("div");
+        this.mapWinTextT1 = document.createElement("div");
+        this.mapWinT2 = document.createElement("div");
+        this.mapPlayerTextT2 = document.createElement("div");
+        this.mapWinTextT2 = document.createElement("div");
         this.mapPickIcon = document.createElement("img");
         this.mapBanContainer = document.createElement("div");
         this.mapBanPlayer = document.createElement("img");
@@ -183,12 +415,12 @@ class Beatmap {
         this.mapModpool.id = `${this.layerName}mapModpoolOverview`;
         this.mapOverlay.id = `${this.layerName}mapOverlayOverview`;
         this.mapSource.id = `${this.layerName}mapSourceOverview`;
-        this.mapWinP1.id = `${this.layerName}mapWinP1`;
-        this.mapPlayerTextP1.id = `${this.layerName}mapPlayerTextP1`;
-        this.mapWinTextP1.id = `${this.layerName}mapWinTextP1`;
-        this.mapWinP2.id = `${this.layerName}mapWinP2`;
-        this.mapPlayerTextP2.id = `${this.layerName}mapPlayerTextP2`;
-        this.mapWinTextP2.id = `${this.layerName}mapWinTextP2`;
+        this.mapWinT1.id = `${this.layerName}mapWinT1`;
+        this.mapPlayerTextT1.id = `${this.layerName}mapPlayerTextT1`;
+        this.mapWinTextT1.id = `${this.layerName}mapWinTextT1`;
+        this.mapWinT2.id = `${this.layerName}mapWinT2`;
+        this.mapPlayerTextT2.id = `${this.layerName}mapPlayerTextT2`;
+        this.mapWinTextT2.id = `${this.layerName}mapWinTextT2`;
         this.mapPickIcon.id = `${this.layerName}mapPickIcon`;
         this.mapBanContainer.id = `${this.layerName}mapBanContainer`;
         this.mapBanPlayer.id = `${this.layerName}mapBanPlayer`;
@@ -210,12 +442,12 @@ class Beatmap {
         this.mapModpool.setAttribute("class", "mapModpoolOverview");
         this.mapOverlay.setAttribute("class", "mapOverlayOverview");
         this.mapSource.setAttribute("class", "mapSourceOverview");
-        this.mapWinP1.setAttribute("class", "mapWin");
-        this.mapPlayerTextP1.setAttribute("class", "mapPlayerText");
-        this.mapWinTextP1.setAttribute("class", "mapWinText");
-        this.mapWinP2.setAttribute("class", "mapWin");
-        this.mapPlayerTextP2.setAttribute("class", "mapPlayerText");
-        this.mapWinTextP2.setAttribute("class", "mapWinText");
+        this.mapWinT1.setAttribute("class", "mapWin");
+        this.mapPlayerTextT1.setAttribute("class", "mapPlayerText");
+        this.mapWinTextT1.setAttribute("class", "mapWinText");
+        this.mapWinT2.setAttribute("class", "mapWin");
+        this.mapPlayerTextT2.setAttribute("class", "mapPlayerText");
+        this.mapWinTextT2.setAttribute("class", "mapWinText");
         this.mapPickIcon.setAttribute("class", "mapPickIcon");
         this.mapBanContainer.setAttribute("class", "mapBanContainer");
         this.mapBanPlayer.setAttribute("class", "mapBanPlayer");
@@ -225,10 +457,10 @@ class Beatmap {
         this.mapModpool.innerHTML = this.mods;
         this.mapMapperTitle.innerHTML = "MAPPED BY";
         this.mapDifficultyTitle.innerHTML = "DIFFICULTY";
-        this.mapPlayerTextP1.innerHTML = "P1";
-        this.mapPlayerTextP2.innerHTML = "P2";
-        this.mapWinP1.innerHTML = "WIN";
-        this.mapWinP2.innerHTML = "WIN";
+        this.mapPlayerTextT1.innerHTML = "T1";
+        this.mapPlayerTextT2.innerHTML = "T2";
+        this.mapWinT1.innerHTML = "WIN";
+        this.mapWinT2.innerHTML = "WIN";
         this.mapBanText.innerHTML = "BAN";
         this.mapPickText.innerHTML = "PICK";
         this.mapSource.setAttribute('src', "../../_shared_assets/design/main_banner.png");
@@ -238,8 +470,8 @@ class Beatmap {
         clickerObj.appendChild(this.mapPickText);
         clickerObj.appendChild(this.mapBanContainer);
         clickerObj.appendChild(this.mapDetails);
-        clickerObj.appendChild(this.mapWinP1);
-        clickerObj.appendChild(this.mapWinP2);
+        clickerObj.appendChild(this.mapWinT1);
+        clickerObj.appendChild(this.mapWinT2);
         clickerObj.appendChild(this.mapModpool);
         clickerObj.appendChild(this.mapOverlay);
         clickerObj.appendChild(this.mapSource);
@@ -248,10 +480,10 @@ class Beatmap {
         document.getElementById(this.mapBanContainer.id).appendChild(this.mapBanPlayer);
         document.getElementById(this.mapBanContainer.id).appendChild(this.mapBanText);
 
-        document.getElementById(this.mapWinP1.id).appendChild(this.mapPlayerTextP1);
-        document.getElementById(this.mapWinP1.id).appendChild(this.mapWinTextP1);
-        document.getElementById(this.mapWinP2.id).appendChild(this.mapPlayerTextP2);
-        document.getElementById(this.mapWinP2.id).appendChild(this.mapWinTextP2);
+        document.getElementById(this.mapWinT1.id).appendChild(this.mapPlayerTextT1);
+        document.getElementById(this.mapWinT1.id).appendChild(this.mapWinTextT1);
+        document.getElementById(this.mapWinT2.id).appendChild(this.mapPlayerTextT2);
+        document.getElementById(this.mapWinT2.id).appendChild(this.mapWinTextT2);
 
         document.getElementById(this.mapDetails.id).appendChild(this.mapTitleContainer);
         document.getElementById(this.mapDetails.id).appendChild(this.mapArtistContainer);
@@ -293,12 +525,12 @@ class Beatmap {
         this.mapModpoolQueue = document.createElement("div");
         this.mapOverlayQueue = document.createElement("div");
         this.mapSourceQueue = document.createElement("img");
-        this.mapWinP1Queue = document.createElement("div");
-        this.mapPlayerTextP1Queue = document.createElement("div");
-        this.mapWinTextP1Queue = document.createElement("div");
-        this.mapWinP2Queue = document.createElement("div");
-        this.mapPlayerTextP2Queue = document.createElement("div");
-        this.mapWinTextP2Queue = document.createElement("div");
+        this.mapWinT1Queue = document.createElement("div");
+        this.mapPlayerTextT1Queue = document.createElement("div");
+        this.mapWinTextT1Queue = document.createElement("div");
+        this.mapWinT2Queue = document.createElement("div");
+        this.mapPlayerTextT2Queue = document.createElement("div");
+        this.mapWinTextT2Queue = document.createElement("div");
         this.mapPickQueue = document.createElement("img");
 
         this.mapDetailsQueue.id = `${this.layerName}mapDetailsOverviewQueue`;
@@ -316,12 +548,12 @@ class Beatmap {
         this.mapModpoolQueue.id = `${this.layerName}mapModpoolOverviewQueue`;
         this.mapOverlayQueue.id = `${this.layerName}mapOverlayOverviewQueue`;
         this.mapSourceQueue.id = `${this.layerName}mapSourceOverviewQueue`;
-        this.mapWinP1Queue.id = `${this.layerName}mapWinP1Queue`;
-        this.mapPlayerTextP1Queue.id = `${this.layerName}mapPlayerTextP1Queue`;
-        this.mapWinTextP1Queue.id = `${this.layerName}mapWinTextP1Queue`;
-        this.mapWinP2Queue.id = `${this.layerName}mapWinP2Queue`;
-        this.mapPlayerTextP2Queue.id = `${this.layerName}mapPlayerTextP2Queue`;
-        this.mapWinTextP2Queue.id = `${this.layerName}mapWinTextP2Queue`;
+        this.mapWinT1Queue.id = `${this.layerName}mapWinT1Queue`;
+        this.mapPlayerTextT1Queue.id = `${this.layerName}mapPlayerTextT1Queue`;
+        this.mapWinTextT1Queue.id = `${this.layerName}mapWinTextT1Queue`;
+        this.mapWinT2Queue.id = `${this.layerName}mapWinT2Queue`;
+        this.mapPlayerTextT2Queue.id = `${this.layerName}mapPlayerTextT2Queue`;
+        this.mapWinTextT2Queue.id = `${this.layerName}mapWinTextT2Queue`;
         this.mapPickQueue.id = `${this.layerName}mapPickQueue`;
 
         this.mapDetailsQueue.setAttribute("class", "mapDetailsOverview");
@@ -339,21 +571,21 @@ class Beatmap {
         this.mapModpoolQueue.setAttribute("class", "mapModpoolOverview");
         this.mapOverlayQueue.setAttribute("class", "mapOverlayOverview");
         this.mapSourceQueue.setAttribute("class", "mapSourceOverview");
-        this.mapWinP1Queue.setAttribute("class", "mapWin");
-        this.mapPlayerTextP1Queue.setAttribute("class", "mapPlayerText");
-        this.mapWinTextP1Queue.setAttribute("class", "mapWinText");
-        this.mapWinP2Queue.setAttribute("class", "mapWin");
-        this.mapPlayerTextP2Queue.setAttribute("class", "mapPlayerText");
-        this.mapWinTextP2Queue.setAttribute("class", "mapWinText");
+        this.mapWinT1Queue.setAttribute("class", "mapWin");
+        this.mapPlayerTextT1Queue.setAttribute("class", "mapPlayerText");
+        this.mapWinTextT1Queue.setAttribute("class", "mapWinText");
+        this.mapWinT2Queue.setAttribute("class", "mapWin");
+        this.mapPlayerTextT2Queue.setAttribute("class", "mapPlayerText");
+        this.mapWinTextT2Queue.setAttribute("class", "mapWinText");
         this.mapPickQueue.setAttribute("class", isPlayerOne ? "mapPickIconQueueLeft" : "mapPickIconQueueRight");
 
         this.mapModpoolQueue.innerHTML = this.mods;
         this.mapMapperTitleQueue.innerHTML = "MAPPED BY";
         this.mapDifficultyTitleQueue.innerHTML = "DIFFICULTY";
-        this.mapPlayerTextP1Queue.innerHTML = "P1";
-        this.mapPlayerTextP2Queue.innerHTML = "P2";
-        this.mapWinP1Queue.innerHTML = "WIN";
-        this.mapWinP2Queue.innerHTML = "WIN";
+        this.mapPlayerTextT1Queue.innerHTML = "T1";
+        this.mapPlayerTextT2Queue.innerHTML = "T2";
+        this.mapWinT1Queue.innerHTML = "WIN";
+        this.mapWinT2Queue.innerHTML = "WIN";
         this.mapSourceQueue.setAttribute("src", this.mapSource.src);
         this.mapTitleQueue.innerHTML = this.mapTitle.innerHTML;
         this.mapArtistQueue.innerHTML = this.mapArtist.innerHTML;
@@ -362,17 +594,17 @@ class Beatmap {
         this.mapPickQueue.setAttribute("src", `../../_shared_assets/design/pick_queue_${isPlayerOne ? "left" : "right"}.png`);
 
         clickerObjQueue.appendChild(this.mapDetailsQueue);
-        clickerObjQueue.appendChild(this.mapWinP1Queue);
-        clickerObjQueue.appendChild(this.mapWinP2Queue);
+        clickerObjQueue.appendChild(this.mapWinT1Queue);
+        clickerObjQueue.appendChild(this.mapWinT2Queue);
         clickerObjQueue.appendChild(this.mapPickQueue);
         clickerObjQueue.appendChild(this.mapModpoolQueue);
         clickerObjQueue.appendChild(this.mapOverlayQueue);
         clickerObjQueue.appendChild(this.mapSourceQueue);
 
-        document.getElementById(this.mapWinP1Queue.id).appendChild(this.mapPlayerTextP1Queue);
-        document.getElementById(this.mapWinP1Queue.id).appendChild(this.mapWinTextP1Queue);
-        document.getElementById(this.mapWinP2Queue.id).appendChild(this.mapPlayerTextP2Queue);
-        document.getElementById(this.mapWinP2Queue.id).appendChild(this.mapWinTextP2Queue);
+        document.getElementById(this.mapWinT1Queue.id).appendChild(this.mapPlayerTextT1Queue);
+        document.getElementById(this.mapWinT1Queue.id).appendChild(this.mapWinTextT1Queue);
+        document.getElementById(this.mapWinT2Queue.id).appendChild(this.mapPlayerTextT2Queue);
+        document.getElementById(this.mapWinT2Queue.id).appendChild(this.mapWinTextT2Queue);
 
         document.getElementById(this.mapDetailsQueue.id).appendChild(this.mapTitleContainerQueue);
         document.getElementById(this.mapDetailsQueue.id).appendChild(this.mapArtistContainerQueue);
@@ -430,7 +662,7 @@ class Beatmap {
 
         this.resultContainerPick.innerHTML = beatmapSet.find(beatmap => beatmap.beatmapId == this.beatmapID)["pick"];
         this.resultContainerSource.setAttribute("src", this.mapSource.src);
-        this.resultContainerPlayer.innerHTML = isPlayerOne ? "P1" : "P2";
+        this.resultContainerPlayer.innerHTML = isPlayerOne ? "T1" : "T2";
         this.resultContainerText.innerHTML = isBan ? "BAN" : "WIN";
 
         resultContainer.appendChild(this.resultContainerSong);
@@ -443,11 +675,12 @@ class Beatmap {
         document.getElementById(this.resultContainerBottom.id).appendChild(this.resultContainerText);
     }
 
-    toggleBan(playerId = 6231292, isPlayerOne, pickIndex) {
+    async toggleBan(acronym = "MY", isPlayerOne, pickIndex) {
         if (this.isPick || this.mods == "TB" || this.isBan) return;
+        const teamFlag = await getCountryFlag(acronym);
         this.isBan = true;
         this.pickIndex = pickIndex;
-        this.mapBanPlayer.setAttribute("src", `https://a.ppy.sh/${playerId}`);
+        this.mapBanPlayer.setAttribute("src", teamFlag);
         setTimeout(function () {
             this.mapBanContainer.style.opacity = 1;
             this.mapBanText.style.animation = "fadeInOverviewBeatmap 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
@@ -464,9 +697,9 @@ class Beatmap {
         this.isPlayerOne = isPlayerOne;
         if (this.mods != "TB") {
             if (isPlayerOne) {
-                this.mapPickText.innerHTML = "P1 PICK";
+                this.mapPickText.innerHTML = "T1 PICK";
             } else {
-                this.mapPickText.innerHTML = "P2 PICK";
+                this.mapPickText.innerHTML = "T2 PICK";
             }
             this.mapPickText.style.opacity = 1;
             this.mapPickText.style.animation = "fadeInOverviewBeatmap 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
@@ -482,38 +715,38 @@ class Beatmap {
         this.isWin = true;
         this.isWinPlayerOne = isPlayerOne;
         if (isPlayerOne) {
-            this.mapWinP1.style.opacity = 1;
-            this.mapWinP1.style.animation = "fadeInOverviewBeatmap 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-            this.mapWinP2.style.opacity = 0;
-            this.mapWinP2.style.animation = "";
-            this.mapWinP2.style.backgroundColor = "white";
-            this.mapWinP1Queue.style.opacity = 1;
-            this.mapWinP1Queue.style.animation = "fadeInOverviewBeatmap 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-            this.mapWinP2Queue.style.opacity = 0;
-            this.mapWinP2Queue.style.animation = "";
-            this.mapWinP2Queue.style.backgroundColor = "white";
-            this.resultContainerPlayer.innerHTML = "P1";
+            this.mapWinT1.style.opacity = 1;
+            this.mapWinT1.style.animation = "fadeInOverviewBeatmap 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+            this.mapWinT2.style.opacity = 0;
+            this.mapWinT2.style.animation = "";
+            this.mapWinT2.style.backgroundColor = "white";
+            this.mapWinT1Queue.style.opacity = 1;
+            this.mapWinT1Queue.style.animation = "fadeInOverviewBeatmap 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+            this.mapWinT2Queue.style.opacity = 0;
+            this.mapWinT2Queue.style.animation = "";
+            this.mapWinT2Queue.style.backgroundColor = "white";
+            this.resultContainerPlayer.innerHTML = "T1";
             if (this.mods != "TB") {
                 this.resultContainerText.style.backgroundColor = this.isPlayerOne ? "#d0ffcc" : "#ffcccc";
-                this.mapWinP1Queue.style.backgroundColor = this.isPlayerOne ? "#d0ffcc" : "#ffcccc";
-                this.mapWinP1.style.backgroundColor = this.isPlayerOne ? "#d0ffcc" : "#ffcccc";
+                this.mapWinT1Queue.style.backgroundColor = this.isPlayerOne ? "#d0ffcc" : "#ffcccc";
+                this.mapWinT1.style.backgroundColor = this.isPlayerOne ? "#d0ffcc" : "#ffcccc";
             }
         } else {
-            this.mapWinP2.style.opacity = 1;
-            this.mapWinP2.style.animation = "fadeInOverviewBeatmap 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-            this.mapWinP1.style.opacity = 0;
-            this.mapWinP1.style.animation = "";
-            this.mapWinP1.style.backgroundColor = "white";
-            this.mapWinP2Queue.style.opacity = 1;
-            this.mapWinP2Queue.style.animation = "fadeInOverviewBeatmap 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-            this.mapWinP1Queue.style.opacity = 0;
-            this.mapWinP1Queue.style.animation = "";
-            this.mapWinP1Queue.style.backgroundColor = "white";
-            this.resultContainerPlayer.innerHTML = "P2";
+            this.mapWinT2.style.opacity = 1;
+            this.mapWinT2.style.animation = "fadeInOverviewBeatmap 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+            this.mapWinT1.style.opacity = 0;
+            this.mapWinT1.style.animation = "";
+            this.mapWinT1.style.backgroundColor = "white";
+            this.mapWinT2Queue.style.opacity = 1;
+            this.mapWinT2Queue.style.animation = "fadeInOverviewBeatmap 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+            this.mapWinT1Queue.style.opacity = 0;
+            this.mapWinT1Queue.style.animation = "";
+            this.mapWinT1Queue.style.backgroundColor = "white";
+            this.resultContainerPlayer.innerHTML = "T2";
             if (this.mods != "TB") {
                 this.resultContainerText.style.backgroundColor = this.isPlayerOne ? "#ffcccc" : "#d0ffcc";
-                this.mapWinP2.style.backgroundColor = this.isPlayerOne ? "#ffcccc" : "#d0ffcc";
-                this.mapWinP2Queue.style.backgroundColor = this.isPlayerOne ? "#ffcccc" : "#d0ffcc";
+                this.mapWinT2.style.backgroundColor = this.isPlayerOne ? "#ffcccc" : "#d0ffcc";
+                this.mapWinT2Queue.style.backgroundColor = this.isPlayerOne ? "#ffcccc" : "#d0ffcc";
             }
         }
     }
@@ -532,10 +765,10 @@ class Beatmap {
             this.mapPickText.style.animation = "";
             this.mapPickIcon.style.opacity = 0;
             this.mapPickIcon.style.animation = "";
-            this.mapWinP1.style.opacity = 0;
-            this.mapWinP1.style.animation = "";
-            this.mapWinP2.style.opacity = 0;
-            this.mapWinP2.style.animation = "";
+            this.mapWinT1.style.opacity = 0;
+            this.mapWinT1.style.animation = "";
+            this.mapWinT2.style.opacity = 0;
+            this.mapWinT2.style.animation = "";
             this.pickIndex = null;
             this.isPick = false;
             this.isWin = false;
@@ -603,6 +836,8 @@ class MatchManager {
         this.upcomingCollabTag = document.getElementById("upcomingCollabTag");
         this.upcomingCustomTag = document.getElementById("upcomingCustomTag");
         this.upcomingSrText = document.getElementById("upcomingSrText");
+        this.upcomingArText = document.getElementById("upcomingArText");
+        this.upcomingCsText = document.getElementById("upcomingCsText");
         this.upcomingOdText = document.getElementById("upcomingOdText");
         this.upcomingBpmText = document.getElementById("upcomingBpmText");
         this.upcomingLengthText = document.getElementById("upcomingLengthText");
@@ -628,20 +863,22 @@ class MatchManager {
         this.bottomPlayerTwoSeed = document.getElementById("bottomPlayerTwoSeed");
         this.bottomScoreLeft = document.getElementById("bottomScoreLeft");
         this.bottomScoreRight = document.getElementById("bottomScoreRight");
-        this.bottomP1Pick = document.getElementById("bottomP1Pick");
-        this.bottomP2Pick = document.getElementById("bottomP2Pick");
-        this.bottomP1PickText = document.getElementById("bottomP1PickText");
-        this.bottomP2PickText = document.getElementById("bottomP2PickText");
+        this.bottomT1Pick = document.getElementById("bottomT1Pick");
+        this.bottomT2Pick = document.getElementById("bottomT2Pick");
+        this.bottomT1PickText = document.getElementById("bottomT1PickText");
+        this.bottomT2PickText = document.getElementById("bottomT2PickText");
 
         this.effectsShimmer = document.getElementById("effectsShimmer");
 
         this.matchScene = document.getElementById("matchScene");
-        this.bottomP1Text = document.getElementById("bottomP1Text");
-        this.bottomP2Text = document.getElementById("bottomP2Text");
+        this.bottomT1Text = document.getElementById("bottomT1Text");
+        this.bottomT2Text = document.getElementById("bottomT2Text");
         this.bottomPlayerOnePick = document.getElementById("bottomPlayerOnePick");
         this.bottomPlayerTwoPick = document.getElementById("bottomPlayerTwoPick");
 
         this.matchSongSr = document.getElementById("matchSongSr");
+        this.matchSongCs = document.getElementById("matchSongCs");
+        this.matchSongAr = document.getElementById("matchSongAr");
         this.matchSongOd = document.getElementById("matchSongOd");
         this.matchSongBpm = document.getElementById("matchSongBpm");
         this.matchSongLength = document.getElementById("matchSongLength");
@@ -662,15 +899,15 @@ class MatchManager {
         this.introPlayerTwoName = document.getElementById("introPlayerTwoName");
         this.introPlayerOneSeed = document.getElementById("introPlayerOneSeed");
         this.introPlayerTwoSeed = document.getElementById("introPlayerTwoSeed");
-        this.introPlayerOneRank = document.getElementById("introPlayerOneRank");
-        this.introPlayerTwoRank = document.getElementById("introPlayerTwoRank");
+        this.introPlayerOneRoster = document.getElementById("introPlayerOneRoster");
+        this.introPlayerTwoRoster = document.getElementById("introPlayerTwoRoster");
         this.introScene = document.getElementById("introScene");
 
         this.matchHistoryLeftPlayerSource = document.getElementById("matchHistoryLeftPlayerSource");
         this.matchHistoryLeftPlayerName = document.getElementById("matchHistoryLeftPlayerName");
         this.matchHistoryLeftPlayerSeed = document.getElementById("matchHistoryLeftPlayerSeed");
         this.matchHistoryRightPlayerSource = document.getElementById("matchHistoryRightPlayerSource");
-        this.matchHistoryRightPlayerName = document.getElementById("matchHistoryRightPlayerName");
+        this.matchHistoryLightPlayerName = document.getElementById("matchHistoryRightPlayerName");
         this.matchHistoryRightPlayerSeed = document.getElementById("matchHistoryRightPlayerSeed");
         this.matchHistoryScene = document.getElementById("matchHistoryScene");
 
@@ -682,59 +919,59 @@ class MatchManager {
                 if (this.hasBanned && this.banCount < 2) {
                     this.hasBanned = false;
                     this.controllerTurn.innerHTML = `Left Player ${this.banCount < 2 ? "Ban" : "Pick"}`;
-                    this.bottomP1Pick.style.animation = "fadeInRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                    this.bottomP1Pick.style.opacity = 1;
-                    this.bottomP2Pick.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                    this.bottomP2Pick.style.opacity = 0;
+                    this.bottomT1Pick.style.animation = "fadeInRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                    this.bottomT1Pick.style.opacity = 1;
+                    this.bottomT2Pick.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                    this.bottomT2Pick.style.opacity = 0;
                 } else if (this.hasBanned || this.banCount < 2) {
                     this.playerTurn = "right";
                     this.controllerTurn.innerHTML = `Right Player ${this.banCount < 2 ? "Ban" : "Pick"}`;
                     if (this.hasBanned) {
-                        this.bottomP1Pick.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                        this.bottomP1Pick.style.opacity = 0;
-                        this.bottomP2Pick.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                        this.bottomP2Pick.style.opacity = 0;
+                        this.bottomT1Pick.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                        this.bottomT1Pick.style.opacity = 0;
+                        this.bottomT2Pick.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                        this.bottomT2Pick.style.opacity = 0;
                     } else {
-                        this.bottomP2Pick.style.animation = "fadeInLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                        this.bottomP2Pick.style.opacity = 1;
-                        this.bottomP1Pick.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                        this.bottomP1Pick.style.opacity = 0;
+                        this.bottomT2Pick.style.animation = "fadeInLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                        this.bottomT2Pick.style.opacity = 1;
+                        this.bottomT1Pick.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                        this.bottomT1Pick.style.opacity = 0;
                     }
                 } else {
                     this.hasBanned = true;
                     this.controllerTurn.innerHTML = `Left Player ${this.banCount < 2 ? "Ban" : "Pick"}`;
-                    this.bottomP1Pick.style.animation = "pickingBob 1s cubic-bezier(0,.7,.39,.99)";
+                    this.bottomT1Pick.style.animation = "pickingBob 1s cubic-bezier(0,.7,.39,.99)";
                 }
             } else {
                 if (this.hasBanned && this.banCount < 2) {
                     this.hasBanned = false;
                     this.controllerTurn.innerHTML = `Right Player ${this.banCount < 2 ? "Ban" : "Pick"}`;
-                    this.bottomP2Pick.style.animation = "fadeInLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                    this.bottomP2Pick.style.opacity = 1;
-                    this.bottomP1Pick.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                    this.bottomP1Pick.style.opacity = 0;
+                    this.bottomT2Pick.style.animation = "fadeInLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                    this.bottomT2Pick.style.opacity = 1;
+                    this.bottomT1Pick.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                    this.bottomT1Pick.style.opacity = 0;
                 } else if (this.hasBanned || this.banCount < 2) {
                     this.playerTurn = "left";
                     this.controllerTurn.innerHTML = `Left Player ${this.banCount < 2 ? "Ban" : "Pick"}`;
                     if (this.hasBanned) {
-                        this.bottomP1Pick.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                        this.bottomP1Pick.style.opacity = 0;
-                        this.bottomP2Pick.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                        this.bottomP2Pick.style.opacity = 0;
+                        this.bottomT1Pick.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                        this.bottomT1Pick.style.opacity = 0;
+                        this.bottomT2Pick.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                        this.bottomT2Pick.style.opacity = 0;
                     } else {
-                        this.bottomP1Pick.style.animation = "fadeInRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                        this.bottomP1Pick.style.opacity = 1;
-                        this.bottomP2Pick.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                        this.bottomP2Pick.style.opacity = 0;
+                        this.bottomT1Pick.style.animation = "fadeInRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                        this.bottomT1Pick.style.opacity = 1;
+                        this.bottomT2Pick.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                        this.bottomT2Pick.style.opacity = 0;
                     }
                 } else {
                     this.hasBanned = true;
                     this.controllerTurn.innerHTML = `Right Player ${this.banCount < 2 ? "Ban" : "Pick"}`;
-                    this.bottomP2Pick.style.animation = "pickingBob 1s cubic-bezier(0,.7,.39,.99)";
+                    this.bottomT2Pick.style.animation = "pickingBob 1s cubic-bezier(0,.7,.39,.99)";
                 }
             }
-            this.bottomP1PickText.innerHTML = this.banCount < 2 ? "Currently Banning" : "Currently Picking";
-            this.bottomP2PickText.innerHTML = this.banCount < 2 ? "Currently Banning" : "Currently Picking";
+            this.bottomT1PickText.innerHTML = this.banCount < 2 ? "Currently Banning" : "Currently Picking";
+            this.bottomT2PickText.innerHTML = this.banCount < 2 ? "Currently Banning" : "Currently Picking";
         });
 
         this.controllerUndo = document.getElementById("controllerUndo");
@@ -762,11 +999,11 @@ class MatchManager {
             this.unpulseOverview("");
             if (!this.currentMatchScene && (this.bestOf - 1) * 2 != this.pickCount - 2 && (this.scoreOne != this.bestOf && this.scoreTwo != this.bestOf && this.leftWins != this.bestOf && this.rightWins != this.bestOf)) {
                 if (this.playerTurn == "left") {
-                    this.bottomP1Pick.style.animation = "fadeInRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                    this.bottomP1Pick.style.opacity = 1;
+                    this.bottomT1Pick.style.animation = "fadeInRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                    this.bottomT1Pick.style.opacity = 1;
                 } else if (this.playerTurn == "right") {
-                    this.bottomP2Pick.style.animation = "fadeInLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                    this.bottomP2Pick.style.opacity = 1;
+                    this.bottomT2Pick.style.animation = "fadeInLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                    this.bottomT2Pick.style.opacity = 1;
                 }
             }
             this.bottomPlayerOnePick.style.opacity = 0;
@@ -829,17 +1066,17 @@ class MatchManager {
                     this.mappoolScene.style.opacity = 1;
                     if (!this.togglePickVar && (this.bestOf - 1) * 2 != this.pickCount - 2 && (this.scoreOne != this.bestOf && this.scoreTwo != this.bestOf && this.leftWins != this.bestOf && this.rightWins != this.bestOf)) {
                         if (this.playerTurn == "left") {
-                            this.bottomP1Pick.style.animation = "fadeInRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                            this.bottomP1Pick.style.opacity = 1;
+                            this.bottomT1Pick.style.animation = "fadeInRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                            this.bottomT1Pick.style.opacity = 1;
                         } else if (this.playerTurn == "right") {
-                            this.bottomP2Pick.style.animation = "fadeInLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                            this.bottomP2Pick.style.opacity = 1;
+                            this.bottomT2Pick.style.animation = "fadeInLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                            this.bottomT2Pick.style.opacity = 1;
                         }
                     }
-                    this.bottomP1Text.style.animation = "fadeInRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                    this.bottomP1Text.style.opacity = 1;
-                    this.bottomP2Text.style.animation = "fadeInLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                    this.bottomP2Text.style.opacity = 1;
+                    this.bottomT1Text.style.animation = "fadeInRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                    this.bottomT1Text.style.opacity = 1;
+                    this.bottomT2Text.style.animation = "fadeInLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                    this.bottomT2Text.style.opacity = 1;
                 }.bind(this), 1000);
                 setTimeout(function () {
                     this.autoSceneChange(3);
@@ -851,17 +1088,17 @@ class MatchManager {
                 this.mappoolScene.style.opacity = 0;
                 if (!this.togglePickVar && (this.bestOf - 1) * 2 != this.pickCount - 2 && (this.scoreOne != this.bestOf && this.scoreTwo != this.bestOf && this.leftWins != this.bestOf && this.rightWins != this.bestOf)) {
                     if (this.playerTurn == "left") {
-                        this.bottomP1Pick.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                        this.bottomP1Pick.style.opacity = 0;
+                        this.bottomT1Pick.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                        this.bottomT1Pick.style.opacity = 0;
                     } else if (this.playerTurn == "right") {
-                        this.bottomP2Pick.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                        this.bottomP2Pick.style.opacity = 0;
+                        this.bottomT2Pick.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                        this.bottomT2Pick.style.opacity = 0;
                     }
                 }
-                this.bottomP1Text.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                this.bottomP1Text.style.opacity = 0;
-                this.bottomP2Text.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                this.bottomP2Text.style.opacity = 0;
+                this.bottomT1Text.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                this.bottomT1Text.style.opacity = 0;
+                this.bottomT2Text.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                this.bottomT2Text.style.opacity = 0;
                 setTimeout(function () {
                     this.gameplayManager.promptGameplay();
                 }.bind(this), 1000);
@@ -877,27 +1114,19 @@ class MatchManager {
             if (this.introSwitchVar) {
                 this.dimButton(this.controllerIntro);
                 this.introSwitchVar = false;
-                if (this.currentIntroScene == 2) {
+                if (this.currentIntroScene == 1) {
                     this.controllerIntro.innerHTML = "Switch to Intro";
                     this.currentIntroScene = 0;
-                    let value = this.historyManager.animateOut();
+                    this.introScene.style.animation = "fadeOut 0.5s ease-in-out";
+                    this.introScene.style.opacity = 0;
                     setTimeout(function () {
                         this.mainMatchScene.style.animation = "mappoolSceneIn 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
                         this.mainMatchScene.style.opacity = 1;
                         this.matchBottom.style.animation = "bottomSceneIn 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
                         this.matchBottom.style.opacity = 1;
-                    }.bind(this), value);
-                } else if (this.currentIntroScene == 1) {
-                    this.controllerIntro.innerHTML = "Switch to Match";
-                    this.currentIntroScene = 2;
-                    this.introScene.style.animation = "fadeOut 0.5s ease-in-out";
-                    this.introScene.style.opacity = 0;
-                        // this.historyManager.animateIn();
-                    setTimeout(function () {
-                        this.historyManager.animateIn();
-                    }.bind(this), 250);
+                    }.bind(this), 500);
                 } else if (this.currentIntroScene == 0) {
-                    this.controllerIntro.innerHTML = "Switch to History";
+                    this.controllerIntro.innerHTML = "Switch to Match";
                     this.currentIntroScene = 1;
                     this.mainMatchScene.style.animation = "mappoolSceneOut 1s cubic-bezier(.45,0,1,.48)";
                     this.mainMatchScene.style.opacity = 0;
@@ -993,11 +1222,11 @@ class MatchManager {
             const mapData = await getDataSet(beatmap.beatmapId);
             bm.mapSource.setAttribute("src", `https://assets.ppy.sh/beatmaps/${mapData.beatmapset_id}/covers/cover.jpg`);
             mapData.title = mapData.title.replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;");
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
             mapData.version = mapData.version.replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;");
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
             bm.mapTitle.innerHTML = mapData.title;
             bm.mapArtist.innerHTML = mapData.artist;
             bm.mapMapper.innerHTML = mapData.creator;
@@ -1021,7 +1250,7 @@ class MatchManager {
                             this.banCount++;
                             if (this.banCount == 1) { this.resultsManager.firstPickIsLeft = this.playerTurn == "left" ? false : true };
                             this.resultsManager.update();
-                            bm.toggleBan(this.playerTurn == "left" ? this.leftPlayerData.user_id : this.rightPlayerData.user_id, this.playerTurn == "left" ? true : false, this.pickCount);
+                            bm.toggleBan(this.playerTurn == "left" ? this.leftPlayerData.FlagName : this.rightPlayerData.FlagName, this.playerTurn == "left" ? true : false, this.pickCount);
                             this.controllerTurn.click();
                         } else if (this.banCount == 2 && !bm.isPick && !bm.isBan && (this.bestOf - 1) * 2 != this.pickCount - 2) {
                             // PICKING
@@ -1126,57 +1355,76 @@ class MatchManager {
     }
 
     async updatePlayerId(playerId) {
-        this.leftPlayerData = await getUserDataSet(playerId[0]);
-        this.rightPlayerData = await getUserDataSet(playerId[1]);
+        this.leftPlayerData = seedData.find(seed => seed["Acronym"] == playerId[0]);
+        this.rightPlayerData = seedData.find(seed => seed["Acronym"] == playerId[1]);
+        const leftFlag = await getCountryFlag(seedData.find(seed => seed["Acronym"] == playerId[0])["FlagName"]);
+        const rightFlag = await getCountryFlag(seedData.find(seed => seed["Acronym"] == playerId[1])["FlagName"]);
+        const leftRoster = await Promise.all(
+            this.leftPlayerData.Players.map(async (player) => {
+                const data = await getUserDataSet(player.id);
+                return data.username;
+            }));
+        const rightRoster = await Promise.all(
+            this.rightPlayerData.Players.map(async (player) => {
+                const data = await getUserDataSet(player.id);
+                return data.username;
+            }));
 
-        this.bottomPlayerOnePfp.setAttribute("src", `https://a.ppy.sh/${this.leftPlayerData.user_id}`);
-        this.bottomPlayerTwoPfp.setAttribute("src", `https://a.ppy.sh/${this.rightPlayerData.user_id}`);
-        this.bottomPlayerOneName.innerHTML = playerId[0];
-        this.bottomPlayerTwoName.innerHTML = playerId[1];
-        this.bottomPlayerOneSeed.innerHTML = `Seed #${seedData.find(seed => seed["Players"][0].id == this.leftPlayerData.user_id)["Seed"].match(/\d+/)[0]}`;
-        this.bottomPlayerTwoSeed.innerHTML = `Seed #${seedData.find(seed => seed["Players"][0].id == this.rightPlayerData.user_id)["Seed"].match(/\d+/)[0]}`;
+        this.bottomPlayerOnePfp.setAttribute("src", leftFlag);
+        this.bottomPlayerTwoPfp.setAttribute("src", rightFlag);
+        this.bottomPlayerOneName.innerHTML = this.leftPlayerData.FullName;
+        this.bottomPlayerTwoName.innerHTML = this.rightPlayerData.FullName;
+        this.bottomPlayerOneSeed.innerHTML = `Seed #${seedData.find(seed => seed["Acronym"] == playerId[0])["Seed"].match(/\d+/)[0]}`;
+        this.bottomPlayerTwoSeed.innerHTML = `Seed #${seedData.find(seed => seed["Acronym"] == playerId[1])["Seed"].match(/\d+/)[0]}`;
 
-        this.introPlayerOnePfp.setAttribute("src", `https://a.ppy.sh/${this.leftPlayerData.user_id}`);
-        this.introPlayerTwoPfp.setAttribute("src", `https://a.ppy.sh/${this.rightPlayerData.user_id}`);
-        this.introPlayerOneName.innerHTML = playerId[0];
-        this.introPlayerTwoName.innerHTML = playerId[1];
-        this.introPlayerOneSeed.innerHTML = `#${seedData.find(seed => seed["Players"][0].id == this.leftPlayerData.user_id)["Seed"].match(/\d+/)[0]}`;
-        this.introPlayerTwoSeed.innerHTML = `#${seedData.find(seed => seed["Players"][0].id == this.rightPlayerData.user_id)["Seed"].match(/\d+/)[0]}`;
-        this.introPlayerOneRank.innerHTML = `#${this.leftPlayerData.pp_rank}`;
-        this.introPlayerTwoRank.innerHTML = `#${this.rightPlayerData.pp_rank}`;
+        this.introPlayerOnePfp.setAttribute("src", leftFlag);
+        this.introPlayerTwoPfp.setAttribute("src", rightFlag);
+        this.introPlayerOneName.innerHTML = this.leftPlayerData.FullName;
+        this.introPlayerTwoName.innerHTML = this.rightPlayerData.FullName;
+        this.introPlayerOneSeed.innerHTML = `#${seedData.find(seed => seed["Acronym"] == playerId[0])["Seed"].match(/\d+/)[0]}`;
+        this.introPlayerTwoSeed.innerHTML = `#${seedData.find(seed => seed["Acronym"] == playerId[1])["Seed"].match(/\d+/)[0]}`;
+        this.introPlayerOneRoster.innerHTML = leftRoster.join(" · ");
+        this.introPlayerTwoRoster.innerHTML = rightRoster.join(" · ");
 
-        this.matchHistoryLeftPlayerSource.setAttribute("src", `https://a.ppy.sh/${this.leftPlayerData.user_id}`);
-        this.matchHistoryRightPlayerSource.setAttribute("src", `https://a.ppy.sh/${this.rightPlayerData.user_id}`);
-        this.matchHistoryLeftPlayerName.innerHTML = playerId[0];
-        this.matchHistoryRightPlayerName.innerHTML = playerId[1];
-        this.matchHistoryLeftPlayerSeed.innerHTML = `Seed #${seedData.find(seed => seed["Players"][0].id == this.leftPlayerData.user_id)["Seed"].match(/\d+/)[0]}`;
-        this.matchHistoryRightPlayerSeed.innerHTML = `Seed #${seedData.find(seed => seed["Players"][0].id == this.rightPlayerData.user_id)["Seed"].match(/\d+/)[0]}`;
+        this.matchHistoryLeftPlayerSource.setAttribute("src", leftFlag);
+        this.matchHistoryRightPlayerSource.setAttribute("src", rightFlag);
+        this.matchHistoryLeftPlayerName.innerHTML = this.leftPlayerData.FullName;
+        this.matchHistoryLightPlayerName.innerHTML = this.rightPlayerData.FullName;
+        this.matchHistoryLeftPlayerSeed.innerHTML = `#${seedData.find(seed => seed["Acronym"] == playerId[0])["Seed"].match(/\d+/)[0]}`;
+        this.matchHistoryRightPlayerSeed.innerHTML = `#${seedData.find(seed => seed["Acronym"] == playerId[1])["Seed"].match(/\d+/)[0]}`;
 
         this.resultsManager.playerLeft = this.leftPlayerData;
         this.resultsManager.playerRight = this.rightPlayerData;
         this.resultsManager.initialUpdate();
         preLoading.style.opacity = 0;
         hasSetupPlayers = true;
-        this.historyManager = new HistoryManager(playerId[0], playerId[1]);
+        this.historyManager = new HistoryManager(this.leftPlayerData, this.rightPlayerData);
         this.historyManager.generate();
         setTimeout(function () {
             preLoading.style.display = "none";
         }.bind(this), 1000);
     }
 
-    changeUpcoming(mapData) {
+    async changeUpcoming(mapData) {
         let upcomingOfflineMapData = this.beatmapSet.find(beatmap => beatmap.beatmapId == mapData.beatmap_id);
         let finalOD = mapData.diff_overall;
+        let finalAR = mapData.diff_approach;
+        let finalCS = mapData.diff_size;
         let bpm = mapData.bpm;
         let length = mapData.total_length;
         // let sr = upcomingOfflineMapData.pick.substring(0, 2) == "DT" ? upcomingOfflineMapData.modSR : mapData.difficultyrating;
         let sr = upcomingOfflineMapData.modSR;
+        const teamFlag = await getCountryFlag(this.playerTurn == "left" ? this.rightPlayerData.FlagName : this.leftPlayerData.FlagName);
 
         if (upcomingOfflineMapData.pick.substring(0, 2) == "HR" || upcomingOfflineMapData.pick.substring(0, 2) == "FM") {
-            finalOD = Math.min(finalOD * 1.4, 10);
+            finalOD = Math.min(finalOD * 1.4, 10).toFixed(1);
+            finalAR = Math.min(finalAR * 1.4, 10).toFixed(1);
+            finalCS = Math.min(finalCS * 1.3, 10).toFixed(1);
             this.gameplayManager.isDoubleTime = false;
         } else if (upcomingOfflineMapData.pick.substring(0, 2) == "DT") {
             finalOD = Math.min((79.5 - (Math.min(79.5, Math.max(19.5, 79.5 - Math.ceil(6 * finalOD))) / 1.5)) / 6, 1.5 > 1.5 ? 12 : 11);
+            let ar_ms = Math.max(Math.min(finalAR <= 5 ? 1800 - 120 * finalAR : 1200 - 150 * (finalAR - 5), 1800), 450) / 1.5;
+            finalAR = ar_ms > 1200 ? ((1800 - ar_ms) / 120).toFixed(2) : (5 + (1200 - ar_ms) / 150).toFixed(1);
             bpm = Math.round(bpm * 1.5);
             length = length / 1.5;
             this.gameplayManager.isDoubleTime = true;
@@ -1189,17 +1437,18 @@ class MatchManager {
         this.upcomingArtistText.innerHTML = mapData.artist;
         this.upcomingSrText.innerHTML = `${Number(sr).toFixed(2)}*`;
         this.upcomingOdText.innerHTML = mapData.diff_overall == finalOD ? Number(finalOD).toFixed(1) : `${Number(mapData.diff_overall).toFixed(1)} (${Number(finalOD).toFixed(1)})`;
+        this.upcomingArText.innerHTML = mapData.diff_approach == finalAR ? Number(finalAR).toFixed(1) : `${Number(mapData.diff_approach).toFixed(1)} (${Number(finalAR).toFixed(1)})`;
+        this.upcomingCsText.innerHTML = mapData.diff_size == finalCS ? Number(finalCS).toFixed(1) : `${Number(mapData.diff_size).toFixed(1)} (${Number(finalCS).toFixed(1)})`;
         this.upcomingBpmText.innerHTML = Number(bpm).toFixed(0);
         this.upcomingLengthText.innerHTML = parseTime(length);
         this.upcomingDifficultyText.innerHTML = mapData.version;
         this.upcomingMapperText.innerHTML = mapData.creator;
         this.upcomingSource.setAttribute("src", `https://assets.ppy.sh/beatmaps/${mapData.beatmapset_id}/covers/cover.jpg`);
-        this.upcomingPickPlayerSource.setAttribute("src", `https://a.ppy.sh/${this.playerTurn == "left" ? this.rightPlayerData.user_id : this.leftPlayerData.user_id}`)
+        this.upcomingPickPlayerSource.setAttribute("src", teamFlag);
 
         try {
-            this.upcomingCustomTag.style.display = upcomingOfflineMapData.customSong ? "initial" : "none";
-            this.upcomingCollabTag.innerHTML = `${upcomingOfflineMapData.collab} Collab`;
-            this.upcomingCollabTag.style.display = upcomingOfflineMapData.collab != "" ? "initial" : "none";
+            this.upcomingCustomTag.style.display = "none";
+            this.upcomingCollabTag.style.display = "none";
         } catch (e) {
             this.upcomingCustomTag.style.display = "none";
             this.upcomingCollabTag.style.display = "none";
@@ -1213,16 +1462,22 @@ class MatchManager {
             // console.log(mapData);
             let upcomingOfflineMapData = this.beatmapSet.find(beatmap => beatmap.beatmapId == mapData.beatmap_id);
             let finalOD = mapData.diff_overall;
+            let finalAR = mapData.diff_approach;
+            let finalCS = mapData.diff_size;
             let bpm = mapData.bpm;
             let length = mapData.total_length;
             // let sr = upcomingOfflineMapData.pick.substring(0, 2) == "DT" ? upcomingOfflineMapData.modSR : mapData.difficultyrating;
             let sr = upcomingOfflineMapData.modSR;
 
             if (upcomingOfflineMapData.pick.substring(0, 2) == "HR" || upcomingOfflineMapData.pick.substring(0, 2) == "FM") {
-                finalOD = Math.min(finalOD * 1.4, 10);
+                finalOD = Math.min(finalOD * 1.4, 10).toFixed(1);
+                finalAR = Math.min(finalAR * 1.4, 10).toFixed(1);
+                finalCS = Math.min(finalCS * 1.3, 10).toFixed(1);
                 this.gameplayManager.isDoubleTime = false;
             } else if (upcomingOfflineMapData.pick.substring(0, 2) == "DT") {
                 finalOD = Math.min((79.5 - (Math.min(79.5, Math.max(19.5, 79.5 - Math.ceil(6 * finalOD))) / 1.5)) / 6, 1.5 > 1.5 ? 12 : 11);
+                let ar_ms = Math.max(Math.min(finalAR <= 5 ? 1800 - 120 * finalAR : 1200 - 150 * (finalAR - 5), 1800), 450) / 1.5;
+                finalAR = ar_ms > 1200 ? ((1800 - ar_ms) / 120).toFixed(2) : (5 + (1200 - ar_ms) / 150).toFixed(1);
                 bpm = Math.round(bpm * 1.5);
                 length = length / 1.5;
             }
@@ -1233,6 +1488,8 @@ class MatchManager {
             this.matchMapperTitle.innerHTML = mapData.creator;
             this.matchDifficultyTitle.innerHTML = mapData.version;
             this.matchSongOd.innerHTML = mapData.diff_overall == finalOD ? Number(finalOD).toFixed(1) : `${Number(mapData.diff_overall).toFixed(1)} (${Number(finalOD).toFixed(1)})`;
+            this.matchSongAr.innerHTML = mapData.diff_approach == finalAR ? Number(finalAR).toFixed(1) : `${Number(mapData.diff_approach).toFixed(1)} (${Number(finalAR).toFixed(1)})`;
+            this.matchSongCs.innerHTML = mapData.diff_size == finalCS ? Number(finalCS).toFixed(1) : `${Number(mapData.diff_size).toFixed(1)} (${Number(finalCS).toFixed(1)})`;
             this.matchSongSr.innerHTML = `${Number(sr).toFixed(2)}*`;
             this.matchSongBpm.innerHTML = Number(bpm).toFixed(0);
             this.matchSongLength.innerHTML = parseTime(length);
@@ -1241,7 +1498,7 @@ class MatchManager {
                 this.matchSource.setAttribute('src', `../../_shared_assets/design/main_banner.ong`);
             };
         } else {
-            let { memoryOD, fullSR, BPM: { min, max } } = data.menu.bm.stats;
+            let { memoryOD, memoryAR, memoryCS, fullSR, BPM: { min, max } } = data.menu.bm.stats;
             let { full } = data.menu.bm.time;
             let { difficulty, mapper, artist, title } = data.menu.bm.metadata;
 
@@ -1251,10 +1508,12 @@ class MatchManager {
             this.matchMapperTitle.innerHTML = mapper;
             this.matchDifficultyTitle.innerHTML = difficulty;
             this.matchSongOd.innerHTML = Number(memoryOD).toFixed(1);
+            this.matchSongAr.innerHTML = Number(memoryAR).toFixed(1);
+            this.matchSongCs.innerHTML = Number(memoryCS).toFixed(1);
             this.matchSongSr.innerHTML = `${Number(fullSR).toFixed(2)}*`;
             this.matchSongBpm.innerHTML = min === max ? min : `${min} - ${max}`;
             this.matchSongLength.innerHTML = parseTimeMs(full);
-            this.matchSource.setAttribute('src', `http://` + location.host + `/Songs/${data.menu.bm.path.full}?a=${Math.random(10000)}`);
+            this.matchSource.setAttribute('src', `http://127.0.0.1:24050/Songs/${data.menu.bm.path.full}?a=${Math.random(10000)}`);
             this.matchSource.onerror = function () {
                 this.matchSource.setAttribute('src', `../../_shared_assets/design/main_banner.ong`);
             };
@@ -1351,8 +1610,8 @@ class MatchManager {
 
         // map has ended and its the next player's turn
         if (ipcState == 4) {
-            this.gameplayManager.hidePlayerData();
-            this.markWin(this.gameplayManager.calculateResults(this.leftPlayerData, this.rightPlayerData));
+            this.gameplayManager.hidePlayerData(false);
+            this.markWin(this.gameplayManager.calculateResults(this.leftPlayerData.FullName, this.rightPlayerData.FullName));
             this.gameplayManager.showResults();
             this.autoSceneChange(2);
             setTimeout(function () {
@@ -1509,6 +1768,7 @@ class MatchManager {
 
 class GameplayManager {
     constructor() {
+        this.scoreTracker = new ScoreTracker();
         this.matchScoreBoard = document.getElementById("matchScoreBoard");
         this.bottomMatch = document.getElementById("bottomMatch");
         this.bottomMatchResults = document.getElementById("bottomMatchResults");
@@ -1516,20 +1776,14 @@ class GameplayManager {
         this.bg = document.getElementById("bg");
         this.bg_match = document.getElementById("bg_match");
         this.matchClients = document.getElementById("matchClients");
+        this.matchClientLeft = document.getElementById("matchClientLeft");
+        this.matchClientRight = document.getElementById("matchClientRight");
 
-        this.matchClientOne100 = document.getElementById("matchClientOne100");
-        this.matchClientOneMiss = document.getElementById("matchClientOneMiss");
-        this.matchClientOneUr = document.getElementById("matchClientOneUr");
-        this.matchClientTwo100 = document.getElementById("matchClientTwo100");
-        this.matchClientTwoMiss = document.getElementById("matchClientTwoMiss");
-        this.matchClientTwoUr = document.getElementById("matchClientTwoUr");
         this.matchOneScore = document.getElementById("matchOneScore");
         this.matchTwoScore = document.getElementById("matchTwoScore");
         this.matchScoreLeftText = document.getElementById("matchScoreLeftText");
         this.matchScoreRightText = document.getElementById("matchScoreRightText");
 
-        this.matchClientOneDetails = document.getElementById("matchClientOneDetails");
-        this.matchClientTwoDetails = document.getElementById("matchClientTwoDetails");
         this.matchScoreRightContent = document.getElementById("matchScoreRightContent");
         this.matchScoreLeftContent = document.getElementById("matchScoreLeftContent");
         this.matchScoreLeftContainer = document.getElementById("matchScoreLeftContainer");
@@ -1556,21 +1810,16 @@ class GameplayManager {
             matchTwoScore: new CountUp('matchTwoScore', 0, 0, 0, .2, { useEasing: true, useGrouping: true, separator: ",", decimal: "." }),
             matchScoreLeftText: new CountUp('matchScoreLeftText', 0, 0, 0, .2, { useEasing: true, useGrouping: true, separator: ",", decimal: "." }),
             matchScoreRightText: new CountUp('matchScoreRightText', 0, 0, 0, .2, { useEasing: true, useGrouping: true, separator: ",", decimal: "." }),
-            matchClientOne100: new CountUp('matchClientOne100', 0, 0, 0, .2, { useEasing: true, useGrouping: true, separator: "", decimal: "." }),
-            matchClientOneMiss: new CountUp('matchClientOneMiss', 0, 0, 0, .2, { useEasing: true, useGrouping: true, separator: "", decimal: "." }),
-            matchClientOneUr: new CountUp('matchClientOneUr', 0, 0, 2, 2, { useEasing: true, useGrouping: true, separator: "", decimal: "." }),
-            matchClientTwo100: new CountUp('matchClientTwo100', 0, 0, 0, .2, { useEasing: true, useGrouping: true, separator: "", decimal: "." }),
-            matchClientTwoMiss: new CountUp('matchClientTwoMiss', 0, 0, 0, .2, { useEasing: true, useGrouping: true, separator: "", decimal: "." }),
-            matchClientTwoUr: new CountUp('matchClientTwoUr', 0, 0, 2, 2, { useEasing: true, useGrouping: true, separator: "", decimal: "." }),
         }
         this.scoreLeft;
         this.scoreRight;
         this.comboLeft;
         this.comboRight;
-        this.barThreshold = 100000;
+        this.barThreshold = 300000;
         this.songStart;
         this.currentTime;
         this.isDoubleTime = false;
+        this.setupClients();
     }
 
     promptGameplay() {
@@ -1599,20 +1848,24 @@ class GameplayManager {
         this.matchClients.style.opacity = 0;
         this.bg.style.clipPath = "polygon(0 0, 100% 0, 100% 100%, 0% 100%)";
         this.bg_match.pause();
-        this.hidePlayerData();
+        this.hidePlayerData(true);
         this.bg.play();
         this.matchScoreBoard.style.opacity = 0;
         this.isGameplay = false;
     }
 
-    hidePlayerData() {
-        this.matchClientOneDetails.style.opacity = 0;
-        this.matchClientTwoDetails.style.opacity = 0;
+    hidePlayerData(playerNameCheck) {
+        if (!playerNameCheck) {
+            this.scoreTracker.resultHide();
+        } else {
+            this.matchClientLeft.style.opacity = 0;
+            this.matchClientRight.style.opacity = 0;
+        }
     }
 
     revealPlayerData() {
-        this.matchClientOneDetails.style.opacity = 1;
-        this.matchClientTwoDetails.style.opacity = 1;
+        this.matchClientLeft.style.opacity = 1;
+        this.matchClientRight.style.opacity = 1;
     }
 
     showResults() {
@@ -1629,29 +1882,23 @@ class GameplayManager {
         this.bottomMatchResults.style.opacity = 0;
     }
 
+    async setupClients() {
+        const clientNumber = 4
+        for (let i=1;i<clientNumber+1;i++) {
+            const client = new Client(i);
+            client.generate();
+            this.scoreTracker.addClient(client, i<3?true:false);
+        }
+    }
+
     updateClients(data, scoreVisible, ipcState) {
         if (!(scoreVisible && ipcState == 3)) return;
-
-        data.map(async (clientData, index) => {
-            let ur = clientData.gameplay.hits.unstableRate;
-            if (index == 0) {
-                this.scoreLeft = clientData.gameplay.score;
-                if (this.comboLeft > 30 && clientData.gameplay.combo.current < this.comboLeft) this.flashMiss("matchClientOneMissGlow");
-                this.comboLeft = clientData.gameplay.combo.current;
-                this.animationScore.matchOneScore.update(this.scoreLeft);
-                this.animationScore.matchClientOne100.update(clientData.gameplay.hits["100"]);
-                this.animationScore.matchClientOneMiss.update(clientData.gameplay.hits["0"]);
-                this.animationScore.matchClientOneUr.update(Number(ur) > 999.99 ? 999.99 : ur);
-            } else if (index == 1) {
-                this.scoreRight = clientData.gameplay.score;
-                if (this.comboRight > 30 && clientData.gameplay.combo.current < this.comboRight) this.flashMiss("matchClientTwoMissGlow");
-                this.comboRight = clientData.gameplay.combo.current;
-                this.animationScore.matchTwoScore.update(this.scoreRight);
-                this.animationScore.matchClientTwo100.update(clientData.gameplay.hits["100"]);
-                this.animationScore.matchClientTwoMiss.update(clientData.gameplay.hits["0"]);
-                this.animationScore.matchClientTwoUr.update(Number(ur) > 999.99 ? 999.99 : ur);
-            }
-        })
+        // console.log(data);
+        this.scoreLeft = data.tourney.manager.gameplay.score.left;
+        this.scoreRight = data.tourney.manager.gameplay.score.right;
+        this.animationScore.matchOneScore.update(this.scoreLeft);
+        this.animationScore.matchTwoScore.update(this.scoreRight);
+        this.scoreTracker.updateClients(data.tourney.ipcClients);
         let difference = Math.abs(this.scoreLeft - this.scoreRight);
         this.animationScore.matchScoreLeftText.update(difference);
         this.animationScore.matchScoreRightText.update(difference);
@@ -1736,14 +1983,9 @@ class GameplayManager {
     }
 
     reset() {
+        this.scoreTracker.reset();
         this.animationScore.matchOneScore.update(0);
-        this.animationScore.matchClientOne100.update(0);
-        this.animationScore.matchClientOneMiss.update(0);
-        this.animationScore.matchClientOneUr.update(0);
         this.animationScore.matchTwoScore.update(0);
-        this.animationScore.matchClientTwo100.update(0);
-        this.animationScore.matchClientTwoMiss.update(0);
-        this.animationScore.matchClientTwoUr.update(0);
         this.animationScore.matchScoreLeftText.update(0);
         this.animationScore.matchScoreRightText.update(0);
         this.matchScoreLeftContent.style.width = "0px";
@@ -1754,8 +1996,8 @@ class GameplayManager {
         this.matchWinningLeftContent.style.width = "0%";
         this.matchWinningRightContent.style.animation = "";
         this.matchWinningRightContent.style.width = "0%";
-        this.matchOneScore.style.color = "black";
-        this.matchTwoScore.style.color = "black";
+        this.matchOneScore.style.color = "#5f3a39";
+        this.matchTwoScore.style.color = "#5f3a39";
         this.matchOneScore.style.transform = "";
         this.matchTwoScore.style.transform = "";
         this.matchWinningLeftWinText.style.opacity = 0;
@@ -1768,14 +2010,16 @@ class GameplayManager {
         let isTie = this.scoreLeft == this.scoreRight;
 
         if (leftWon && !isTie) {
-            this.bottomResultsTop.innerHTML = `${leftPlayerData.username} WINS BY`;
+            this.bottomResultsTop.innerHTML = "決着";
+            // this.bottomResultsTop.innerHTML = `${leftPlayerData} WINS BY`;
         } else if (!leftWon && !isTie) {
-            this.bottomResultsTop.innerHTML = `${rightPlayerData.username} WINS BY`;
+            this.bottomResultsTop.innerHTML = "決着";
+            // this.bottomResultsTop.innerHTML = `${rightPlayerData} WINS BY`;
         } else if (isTie) {
             this.bottomResultsTop.innerHTML = "SCORE IS TIED!";
         }
 
-        this.bottomResultsBottom.innerHTML = Math.abs(this.scoreLeft - this.scoreRight).toLocaleString();
+        // this.bottomResultsBottom.innerHTML = Math.abs(this.scoreLeft - this.scoreRight).toLocaleString();
 
         if (!isTie) this.revealScore(leftWon);
 
@@ -1786,11 +2030,11 @@ class GameplayManager {
         if (leftWon) {
             this.matchWinningLeftContent.style.animation = "winBar 2s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
             this.matchWinningLeftContent.style.width = "100%";
-            this.matchWinningLeftContent.style.backgroundColor = "black";
+            this.matchWinningLeftContent.style.backgroundColor = "#5f3a39";
             this.matchWinningRightContent.style.animation = "loseBar 2s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
             this.matchWinningRightContent.style.width = "100%";
-            this.matchWinningRightContent.style.backgroundColor = "white";
-            this.matchOneScore.style.color = "white";
+            this.matchWinningRightContent.style.backgroundColor = "#edbfbb";
+            this.matchOneScore.style.color = "#edbfbb";
             this.matchOneScore.style.transform = "TranslateX(480px)";
             this.matchTwoScore.style.transform = "TranslateX(-570px)";
             this.matchWinningLeftWinText.style.opacity = 1;
@@ -1798,11 +2042,11 @@ class GameplayManager {
         } else {
             this.matchWinningRightContent.style.animation = "winBar 2s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
             this.matchWinningRightContent.style.width = "100%";
-            this.matchWinningRightContent.style.backgroundColor = "black";
+            this.matchWinningRightContent.style.backgroundColor = "#5f3a39";
             this.matchWinningLeftContent.style.animation = "loseBar 2s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
             this.matchWinningLeftContent.style.width = "100%";
-            this.matchWinningLeftContent.style.backgroundColor = "white";
-            this.matchTwoScore.style.color = "white";
+            this.matchWinningLeftContent.style.backgroundColor = "#edbfbb";
+            this.matchTwoScore.style.color = "#edbfbb";
             this.matchOneScore.style.transform = "TranslateX(570px)";
             this.matchTwoScore.style.transform = "TranslateX(-480px)";
             this.matchWinningLeftWinText.style.opacity = 0;
@@ -1843,21 +2087,23 @@ class ResultsManager {
         this.currentStage = stages.find(stage => stage.stage == currentStage)["stageName"];
     }
 
-    initialUpdate() {
-        this.resultScorelinePlayerOneSource.setAttribute("src", `https://a.ppy.sh/${this.playerLeft.user_id}`);
-        this.resultScorelinePlayerTwoSource.setAttribute("src", `https://a.ppy.sh/${this.playerRight.user_id}`);
-        this.resultScorelinePlayerOneText.innerHTML = this.playerLeft.username;
-        this.resultScorelinePlayerTwoText.innerHTML = this.playerRight.username;
-        this.resultPlayerPickSourceOne.setAttribute("src", `https://a.ppy.sh/${this.playerLeft.user_id}`);
-        this.resultPlayerPickSourceTwo.setAttribute("src", `https://a.ppy.sh/${this.playerRight.user_id}`);
+    async initialUpdate() {
+        const leftFlag = await getCountryFlag(this.playerLeft.FlagName);
+        const rightFlag = await getCountryFlag(this.playerRight.FlagName);
+        this.resultScorelinePlayerOneSource.setAttribute("src", leftFlag);
+        this.resultScorelinePlayerTwoSource.setAttribute("src", rightFlag);
+        this.resultScorelinePlayerOneText.innerHTML = this.playerLeft.FullName;
+        this.resultScorelinePlayerTwoText.innerHTML = this.playerRight.FullName;
+        this.resultPlayerPickSourceOne.setAttribute("src", leftFlag);
+        this.resultPlayerPickSourceTwo.setAttribute("src", rightFlag);
         this.resultStageText.innerHTML = this.currentStage;
     }
 
     update() {
         this.resultOne.innerHTML = this.scoreLeft;
         this.resultTwo.innerHTML = this.scoreRight;
-        this.resultPlayerTextOne.innerHTML = `P1 ${this.firstPickIsLeft ? "TOP" : "BOTTOM"}`;
-        this.resultPlayerTextTwo.innerHTML = `P2 ${this.firstPickIsLeft ? "BOTTOM" : "TOP"}`;
+        this.resultPlayerTextOne.innerHTML = this.firstPickIsLeft ? "上" : "下";
+        this.resultPlayerTextTwo.innerHTML = this.firstPickIsLeft ? "下" : "上";
     }
 }
 
@@ -1867,7 +2113,7 @@ class HistoryManager {
         this.rightPlayer = rightPlayer;
         this.leftHistory = [];
         this.rightHistory = [];
-        this.rounds = ["Round of 64", "Round of 32", "Round of 16", "Quarterfinals", "Semifinals", "Finals", "Grand Finals"];
+        this.rounds = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"];
 
         this.matchHistoryLeftPlayerSource = document.getElementById("matchHistoryLeftPlayerSource");
         this.matchHistoryLeftPlayerName = document.getElementById("matchHistoryLeftPlayerName");
@@ -1888,24 +2134,27 @@ class HistoryManager {
             if (canGenerate) {
                 canGenerate = round == stages.find(stage => stage.stage == currentStage)["stageName"] ? false : true;
                 const stageMatches = await getSchedules(round);
+                // console.log(stageMatches);
                 const leftMatches = stageMatches
                     .filter(match => (match.score1 == -1 || match.score2 == -1 || match.score1 > 4 || match.score2 > 4))
-                    .filter(match => (match.player1 == this.leftPlayer || match.player2 == this.leftPlayer))
+                    .filter(match => (match.player1 == this.leftPlayer.FullName || match.player2 == this.leftPlayer.FullName))
                     .sort((a, b) => new Date(a.time) - new Date(b.time))
                 const rightMatches = stageMatches
                     .filter(match => (match.score1 == -1 || match.score2 == -1 || match.score1 > 4 || match.score2 > 4))
-                    .filter(match => (match.player1 == this.rightPlayer || match.player2 == this.rightPlayer))
+                    .filter(match => (match.player1 == this.rightPlayer.FullName || match.player2 == this.rightPlayer.FullName))
                     .sort((a, b) => new Date(a.time) - new Date(b.time))
+                // console.log(leftMatches);
+                // console.log(rightMatches);
 
                 leftMatches.map(async (match) => {
                     const history = new History(true, index);
                     index++;
                     history.generate();
-                    const isLeft = match.player1 == this.leftPlayer ? true : false;
-                    const playerData = await getUserDataSet(isLeft ? match.player2 : match.player1);
-                    history.historyRound.innerHTML = stages.find(stage => stage.stageName == round)["stage"];
+                    const isLeft = match.player1 == this.leftPlayer.FullName ? true : false;
                     history.historyPlayer.innerHTML = isLeft ? match.player2 : match.player1;
-                    history.historySource.setAttribute("src", `https://a.ppy.sh/${playerData.user_id}`);
+                    const teamFlag = await getCountryFlag(seedData.find(seed => seed["Acronym"] == history.historyPlayer.innerHTML)["FlagName"]);
+                    history.historyRound.innerHTML = stages.find(stage => stage.stageName == round)["stage"];
+                    history.historySource.setAttribute("src", teamFlag);
                     history.historyWinText.innerHTML = isLeft ? (match.score1 > match.score2 ? "WIN" : "LOSE") : (match.score2 > match.score1 ? "WIN" : "LOSE");
                     history.historyWinText.style.backgroundColor = isLeft ? (match.score1 > match.score2 ? "white" : "black") : (match.score2 > match.score1 ? "white" : "black");
                     history.historyWinText.style.color = isLeft ? (match.score1 > match.score2 ? "black" : "white") : (match.score2 > match.score1 ? "black" : "white");
@@ -1916,11 +2165,11 @@ class HistoryManager {
                     const history = new History(false, index);
                     index++;
                     history.generate();
-                    const isLeft = match.player1 == this.rightPlayer ? true : false;
-                    const playerData = await getUserDataSet(isLeft ? match.player2 : match.player1);
-                    history.historyRound.innerHTML = stages.find(stage => stage.stageName == round)["stage"];
+                    const isLeft = match.player1 == this.rightPlayer.FullName ? true : false;
                     history.historyPlayer.innerHTML = isLeft ? match.player2 : match.player1;
-                    history.historySource.setAttribute("src", `https://a.ppy.sh/${playerData.user_id}`);
+                    const teamFlag = await getCountryFlag(seedData.find(seed => seed["Acronym"] == history.historyPlayer.innerHTML)["FlagName"]);
+                    history.historyRound.innerHTML = stages.find(stage => stage.stageName == round)["stage"];
+                    history.historySource.setAttribute("src", teamFlag);
                     history.historyWinText.innerHTML = isLeft ? (match.score1 > match.score2 ? "WIN" : "LOSE") : (match.score2 > match.score1 ? "WIN" : "LOSE");
                     history.historyWinText.style.backgroundColor = isLeft ? (match.score1 > match.score2 ? "white" : "black") : (match.score2 > match.score1 ? "white" : "black");
                     history.historyWinText.style.color = isLeft ? (match.score1 > match.score2 ? "black" : "white") : (match.score2 > match.score1 ? "black" : "white");
@@ -1938,18 +2187,18 @@ class HistoryManager {
         this.matchHistoryLeftPlayer.style.opacity = 1;
         this.matchHistoryRightPlayer.style.animation = "fadeInLeftHistory 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
         this.matchHistoryRightPlayer.style.opacity = 1;
-        this.leftHistory.map((history,index)=>{
-            setTimeout(function() {
+        this.leftHistory.map((history, index) => {
+            setTimeout(function () {
                 history.history.style.animation = "fadeInRightHistory 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
                 history.history.style.opacity = 1;
-            }.bind(this),100*(index+1));
-        }) 
-        this.rightHistory.map((history,index)=>{
-            setTimeout(function() {
+            }.bind(this), 100 * (index + 1));
+        })
+        this.rightHistory.map((history, index) => {
+            setTimeout(function () {
                 history.history.style.animation = "fadeInLeftHistory 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
                 history.history.style.opacity = 1;
-            }.bind(this),100*(index+1));
-        }) 
+            }.bind(this), 100 * (index + 1));
+        })
     }
 
     animateOut() {
@@ -1960,21 +2209,21 @@ class HistoryManager {
         this.matchHistoryLeftPlayer.style.opacity = 0;
         this.matchHistoryRightPlayer.style.animation = "fadeOutLeftHistory 1s cubic-bezier(.45,0,1,.48)";
         this.matchHistoryRightPlayer.style.opacity = 0;
-        this.leftHistory.map((history,index)=>{
-            setTimeout(function() {
+        this.leftHistory.map((history, index) => {
+            setTimeout(function () {
                 history.history.style.animation = "fadeOutRightHistory 1s cubic-bezier(.45,0,1,.48)";
                 history.history.style.opacity = 0;
-            }.bind(this),100*(index+1));
-            max = max < index+1 ? index+1 : max;
-        }) 
-        this.rightHistory.map((history,index)=>{
-            setTimeout(function() {
+            }.bind(this), 100 * (index + 1));
+            max = max < index + 1 ? index + 1 : max;
+        })
+        this.rightHistory.map((history, index) => {
+            setTimeout(function () {
                 history.history.style.animation = "fadeOutLeftHistory 1s cubic-bezier(.45,0,1,.48)";
                 history.history.style.opacity = 0;
-            }.bind(this),100*(index+1));
-            max = max < index+1 ? index+1 : max;
-        }) 
-        return 1000+(max*100);
+            }.bind(this), 100 * (index + 1));
+            max = max < index + 1 ? index + 1 : max;
+        })
+        return 1000 + (max * 100);
     }
 }
 
@@ -2043,7 +2292,7 @@ async function getSchedules(stage) {
             await axios.get("/matches", {
                 baseURL: "https://gtsosu.com/api",
                 params: {
-                    tourney: "egts_2025",
+                    tourney: "igts_2025",
                     stage: stage,
                 },
             })
@@ -2060,38 +2309,19 @@ async function setupBeatmaps() {
 }
 
 async function getDataSet(beatmapID) {
-    try {
-        const data = (
-            await axios.get("/get_beatmaps", {
-                baseURL: "https://osu.ppy.sh/api",
-                params: {
-                    k: api,
-                    b: beatmapID,
-                },
-            })
-        )["data"];
-        return data.length !== 0 ? data[0] : null;
-    } catch (error) {
-        console.error(error);
-    }
+    const { data } = await axios.get("/get_beatmaps", {
+        baseURL: BASE,
+        params: { b: beatmapID }
+    });
+    return data.length ? data[0] : null;
 };
 
 async function getUserDataSet(user_id) {
-    try {
-        const data = (
-            await axios.get("/get_user", {
-                baseURL: "https://osu.ppy.sh/api",
-                params: {
-                    k: api,
-                    u: user_id,
-                    m: 1,
-                },
-            })
-        )["data"];
-        return data.length !== 0 ? data[0] : null;
-    } catch (error) {
-        console.error(error);
-    }
+    const { data } = await axios.get("/get_user", {
+        baseURL: BASE,
+        params: { u: user_id, m: 1 }
+    });
+    return data.length ? data[0] : null;
 }
 
 const parseTime = seconds => {
@@ -2145,4 +2375,48 @@ async function fadeInOut() {
 
 async function delay(ms) {
     return await new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function getCountryFlag(acronym) {
+    let imageUrl;
+    // console.log(acronym);
+    if (!teamFlags.includes(acronym)) {
+        imageUrl = addFlags.find(flag => flag.flagname == acronym)["link"];
+    } else {
+        imageUrl = `https://raw.githubusercontent.com/ppy/osu-resources/master/osu.Game.Resources/Textures/Flags/${acronym}.png`;
+    }
+    // console.log(imageUrl);
+    return imageUrl;
+}
+
+function updateTeamLineups(clients) {
+    let leftTeam = `${playerOne.innerHTML}: `;
+    let left = 0;
+    let rightTeam = `${playerTwo.innerHTML}: `;
+    let right = 0;
+    let leftTeamPlayers = teams.find(team => team["teamName"] === playerOne.innerHTML)?.["teamMembers"];
+    let rightTeamPlayers = teams.find(team => team["teamName"] === playerTwo.innerHTML)?.["teamMembers"];
+    // console.log(leftTeamPlayers);
+    clients.map((client) => {
+        if (leftTeamPlayers.includes(client.spectating.name)) {
+            leftTeam += (left > 0 ? `, ` : ``) + `${client.spectating.name}`;
+            left ++;
+        } else if (rightTeamPlayers.includes(client.spectating.name)) {
+            rightTeam += (right > 0 ? `, ` : ``) + `${client.spectating.name}`;
+            right ++;
+        }
+    })
+
+    leftTeamLineup.innerHTML = leftTeam;
+    rightTeamLineup.innerHTML = rightTeam;
+
+}
+
+async function adjustFont(title, boundaryWidth, originalFontSize) {
+    if (title.scrollWidth > boundaryWidth) {
+        let ratio = (title.scrollWidth / boundaryWidth);
+        title.style.fontSize = `${originalFontSize / ratio}px`;
+    } else {
+        title.style.fontSize = `${originalFontSize}px`;
+    }
 }
