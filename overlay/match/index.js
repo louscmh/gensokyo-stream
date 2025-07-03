@@ -318,15 +318,15 @@ socket.onmessage = async event => {
 
     // NORMAL CODE
 
-    // tempLeft = data.tourney.manager.teamName.left;
-    tempLeft = "幻想の結界チーム";
+    tempLeft = data.tourney.manager.teamName.left;
+    // tempLeft = "幻想の結界チーム";
 
     if (tempLeft != leftTeam && tempLeft != "" && !playersSetup) {
         leftTeam = tempLeft;
         playersSetup = true;
         setTimeout(function (event) {
-            // matchManager.updatePlayerId([data.tourney.manager.teamName.left, data.tourney.manager.teamName.right])
-            matchManager.updatePlayerId(["幻想の結界チーム", "禁呪の詠唱チーム"]);
+            matchManager.updatePlayerId([data.tourney.manager.teamName.left, data.tourney.manager.teamName.right])
+            // matchManager.updatePlayerId(["幻想の結界チーム", "禁呪の詠唱チーム"]);
         }, 150);
     }
 
