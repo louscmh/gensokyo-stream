@@ -91,7 +91,7 @@ class ScoreTracker {
         this.leftClients = [];
         this.rightClients = [];
     }
-    addClient(client,isLeft) {
+    addClient(client, isLeft) {
         if (isLeft) {
             this.leftClients.push(client);
         } else {
@@ -99,9 +99,9 @@ class ScoreTracker {
         }
     }
     updateClients(data) {
-        data.map(async(clientData,index) => {
+        data.map(async (clientData, index) => {
             // console.log(index);
-            const client = index < 2 ? this.leftClients[index] : this.rightClients[index-2];
+            const client = index < 2 ? this.leftClients[index] : this.rightClients[index - 2];
             if (client) {
                 client.updateMiss(clientData.gameplay.combo.current);
                 client.updateGood(clientData.gameplay.accuracy);
@@ -113,16 +113,16 @@ class ScoreTracker {
         })
     }
     getScores() {
-        if (this.currentState != 3) return null,null;
+        if (this.currentState != 3) return null, null;
         let left = 0;
         let right = 0;
-        this.leftClients.map(async(client) => {
+        this.leftClients.map(async (client) => {
             left += client.score ?? 0;
         })
-        this.rightClients.map(async(client) => {
+        this.rightClients.map(async (client) => {
             right += client.score ?? 0;
         })
-        return [left,right];
+        return [left, right];
     }
     updateState(state) {
         this.currentState = state;
@@ -171,7 +171,7 @@ class Client {
         this.matchClientUr = document.createElement("div");
         this.matchClientNameContainer = document.createElement("div");
         this.matchClientName = document.createElement("div");
-        
+
         this.matchClientDetails.id = `${this.clientNumber}CLIENTDETAILS`;
         this.matchClientMissGlow.id = `${this.clientNumber}CLIENTMISSGLOW`;
         this.matchClientLeft.id = `${this.clientNumber}CLIENTLEFT`;
@@ -210,7 +210,7 @@ class Client {
         document.getElementById(this.matchClientDetails.id).appendChild(this.matchClientMissGlow);
         document.getElementById(this.matchClientDetails.id).appendChild(this.matchClientLeft);
         document.getElementById(this.matchClientDetails.id).appendChild(this.matchClientRight);
-        
+
         document.getElementById(`${this.matchClientLeft.id}`).appendChild(this.matchClient100Container);
         document.getElementById(`${this.matchClientLeft.id}`).appendChild(this.matchClientMissContainer);
         document.getElementById(this.matchClientRight.id).appendChild(this.matchClientUrContainer);
@@ -916,74 +916,82 @@ class MatchManager {
         this.controllerTurn = document.getElementById("controllerTurn");
         this.controllerTurn.addEventListener("click", async (event) => {
             if (this.playerTurn == "left") {
-                if (this.hasBanned && this.banCount < 2) {
+                if (this.hasBanned && this.banCount < 4) {
                     this.hasBanned = false;
-                    this.controllerTurn.innerHTML = `Left Player ${this.banCount < 2 ? "Ban" : "Pick"}`;
+                    this.controllerTurn.innerHTML = `Left Player ${this.banCount < 4 ? "Ban" : "Pick"}`;
                     this.bottomT1Pick.style.animation = "fadeInRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
                     this.bottomT1Pick.style.opacity = 1;
                     this.bottomT2Pick.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
                     this.bottomT2Pick.style.opacity = 0;
-                } else if (this.hasBanned || this.banCount < 2) {
-                    this.playerTurn = "right";
-                    this.controllerTurn.innerHTML = `Right Player ${this.banCount < 2 ? "Ban" : "Pick"}`;
+                } else if (this.hasBanned || this.banCount < 4) {
+                    this.playerTurn = this.banCount == 2 ? "left" : "right";
+                    this.controllerTurn.innerHTML = `${this.banCount == 2 ? "Left" : "Right"} Player ${this.banCount < 4 ? "Ban" : "Pick"}`;
                     if (this.hasBanned) {
                         this.bottomT1Pick.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
                         this.bottomT1Pick.style.opacity = 0;
                         this.bottomT2Pick.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
                         this.bottomT2Pick.style.opacity = 0;
                     } else {
-                        this.bottomT2Pick.style.animation = "fadeInLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                        this.bottomT2Pick.style.opacity = 1;
-                        this.bottomT1Pick.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                        this.bottomT1Pick.style.opacity = 0;
+                        if (this.banCount == 2) {
+                            this.bottomT1Pick.style.animation = "pickingBob 1s cubic-bezier(0,.7,.39,.99)";
+                        } else {
+                            this.bottomT2Pick.style.animation = "fadeInLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                            this.bottomT2Pick.style.opacity = 1;
+                            this.bottomT1Pick.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                            this.bottomT1Pick.style.opacity = 0;
+                        }
                     }
                 } else {
                     this.hasBanned = true;
-                    this.controllerTurn.innerHTML = `Left Player ${this.banCount < 2 ? "Ban" : "Pick"}`;
+                    this.controllerTurn.innerHTML = `Left Player ${this.banCount < 4 ? "Ban" : "Pick"}`;
                     this.bottomT1Pick.style.animation = "pickingBob 1s cubic-bezier(0,.7,.39,.99)";
                 }
             } else {
-                if (this.hasBanned && this.banCount < 2) {
+                if (this.hasBanned && this.banCount < 4) {
                     this.hasBanned = false;
-                    this.controllerTurn.innerHTML = `Right Player ${this.banCount < 2 ? "Ban" : "Pick"}`;
+                    this.controllerTurn.innerHTML = `Right Player ${this.banCount < 4 ? "Ban" : "Pick"}`;
                     this.bottomT2Pick.style.animation = "fadeInLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
                     this.bottomT2Pick.style.opacity = 1;
                     this.bottomT1Pick.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
                     this.bottomT1Pick.style.opacity = 0;
-                } else if (this.hasBanned || this.banCount < 2) {
-                    this.playerTurn = "left";
-                    this.controllerTurn.innerHTML = `Left Player ${this.banCount < 2 ? "Ban" : "Pick"}`;
+                } else if (this.hasBanned || this.banCount < 4) {
+                    this.playerTurn = this.banCount == 2 ? "right" : "left";
+                    this.controllerTurn.innerHTML = `${this.banCount == 2 ? "Right" : "Left"} Player ${this.banCount < 4 ? "Ban" : "Pick"}`;
                     if (this.hasBanned) {
                         this.bottomT1Pick.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
                         this.bottomT1Pick.style.opacity = 0;
                         this.bottomT2Pick.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
                         this.bottomT2Pick.style.opacity = 0;
                     } else {
-                        this.bottomT1Pick.style.animation = "fadeInRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                        this.bottomT1Pick.style.opacity = 1;
-                        this.bottomT2Pick.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
-                        this.bottomT2Pick.style.opacity = 0;
+                        if (this.banCount == 2) {
+                            this.bottomT2Pick.style.animation = "pickingBob 1s cubic-bezier(0,.7,.39,.99)";
+                        } else {
+                            this.bottomT1Pick.style.animation = "fadeInRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                            this.bottomT1Pick.style.opacity = 1;
+                            this.bottomT2Pick.style.animation = "fadeOutLeft 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
+                            this.bottomT2Pick.style.opacity = 0;
+                        }
                     }
                 } else {
                     this.hasBanned = true;
-                    this.controllerTurn.innerHTML = `Right Player ${this.banCount < 2 ? "Ban" : "Pick"}`;
+                    this.controllerTurn.innerHTML = `Right Player ${this.banCount < 4 ? "Ban" : "Pick"}`;
                     this.bottomT2Pick.style.animation = "pickingBob 1s cubic-bezier(0,.7,.39,.99)";
                 }
             }
-            this.bottomT1PickText.innerHTML = this.banCount < 2 ? "Currently Banning" : "Currently Picking";
-            this.bottomT2PickText.innerHTML = this.banCount < 2 ? "Currently Banning" : "Currently Picking";
+            this.bottomT1PickText.innerHTML = this.banCount < 4 ? "Currently Banning" : "Currently Picking";
+            this.bottomT2PickText.innerHTML = this.banCount < 4 ? "Currently Banning" : "Currently Picking";
         });
 
         this.controllerUndo = document.getElementById("controllerUndo");
         this.controllerUndo.addEventListener("click", async (event) => {
             let deletedPick;
-            if (this.pickCount > 2) {
+            if (this.pickCount > 4) {
                 deletedPick = this.overviewBeatmaps.find(overviewBeatmap => overviewBeatmap.pickIndex == this.pickCount && overviewBeatmap.isPick);
                 deletedPick.isWin ? deletedPick.isWinPlayerOne ? this.leftWins-- : this.rightWins-- : null;
                 deletedPick.cancelOperation(this.pickCount);
                 this.pickCount--;
                 this.controllerTurn.click();
-            } else if (this.pickCount <= 2 & this.banCount > 0) {
+            } else if (this.pickCount <= 4 & this.banCount > 0) {
                 deletedPick = this.overviewBeatmaps.find(overviewBeatmap => overviewBeatmap.pickIndex == this.pickCount && overviewBeatmap.isBan);
                 deletedPick.isWin ? deletedPick.isWinPlayerOne ? this.leftWins-- : this.rightWins-- : null;
                 deletedPick.cancelOperation(this.pickCount);
@@ -997,7 +1005,7 @@ class MatchManager {
         this.controllerArrow.addEventListener("click", async (event) => {
             if (!this.togglePickVar) return;
             this.unpulseOverview("");
-            if (!this.currentMatchScene && (this.bestOf - 1) * 2 != this.pickCount - 2 && (this.scoreOne != this.bestOf && this.scoreTwo != this.bestOf && this.leftWins != this.bestOf && this.rightWins != this.bestOf)) {
+            if (!this.currentMatchScene && (this.bestOf - 1) * 2 != this.pickCount - 4 && (this.scoreOne != this.bestOf && this.scoreTwo != this.bestOf && this.leftWins != this.bestOf && this.rightWins != this.bestOf)) {
                 if (this.playerTurn == "left") {
                     this.bottomT1Pick.style.animation = "fadeInRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
                     this.bottomT1Pick.style.opacity = 1;
@@ -1064,7 +1072,7 @@ class MatchManager {
                 setTimeout(function () {
                     this.mappoolScene.style.animation = "mappoolSceneIn 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
                     this.mappoolScene.style.opacity = 1;
-                    if (!this.togglePickVar && (this.bestOf - 1) * 2 != this.pickCount - 2 && (this.scoreOne != this.bestOf && this.scoreTwo != this.bestOf && this.leftWins != this.bestOf && this.rightWins != this.bestOf)) {
+                    if (!this.togglePickVar && (this.bestOf - 1) * 2 != this.pickCount - 4 && (this.scoreOne != this.bestOf && this.scoreTwo != this.bestOf && this.leftWins != this.bestOf && this.rightWins != this.bestOf)) {
                         if (this.playerTurn == "left") {
                             this.bottomT1Pick.style.animation = "fadeInRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
                             this.bottomT1Pick.style.opacity = 1;
@@ -1086,7 +1094,7 @@ class MatchManager {
                 this.currentMatchScene = true;
                 this.mappoolScene.style.animation = "mappoolSceneOut 1s cubic-bezier(.45,0,1,.48)";
                 this.mappoolScene.style.opacity = 0;
-                if (!this.togglePickVar && (this.bestOf - 1) * 2 != this.pickCount - 2 && (this.scoreOne != this.bestOf && this.scoreTwo != this.bestOf && this.leftWins != this.bestOf && this.rightWins != this.bestOf)) {
+                if (!this.togglePickVar && (this.bestOf - 1) * 2 != this.pickCount - 4 && (this.scoreOne != this.bestOf && this.scoreTwo != this.bestOf && this.leftWins != this.bestOf && this.rightWins != this.bestOf)) {
                     if (this.playerTurn == "left") {
                         this.bottomT1Pick.style.animation = "fadeOutRight 1s cubic-bezier(0.000, 0.125, 0.000, 1.005)";
                         this.bottomT1Pick.style.opacity = 0;
@@ -1244,7 +1252,7 @@ class MatchManager {
                     } else if (event.ctrlKey || event.shiftKey) {
                         return;
                     } else {
-                        if (this.banCount < 2 && !bm.isBan) {
+                        if (this.banCount < 4 && !bm.isBan) {
                             // BANNING
                             this.pickCount++;
                             this.banCount++;
@@ -1252,7 +1260,7 @@ class MatchManager {
                             this.resultsManager.update();
                             bm.toggleBan(this.playerTurn == "left" ? this.leftPlayerData.FlagName : this.rightPlayerData.FlagName, this.playerTurn == "left" ? true : false, this.pickCount);
                             this.controllerTurn.click();
-                        } else if (this.banCount == 2 && !bm.isPick && !bm.isBan && (this.bestOf - 1) * 2 != this.pickCount - 2) {
+                        } else if (this.banCount == 4 && !bm.isPick && !bm.isBan && (this.bestOf - 1) * 2 != this.pickCount - 4) {
                             // PICKING
                             this.pickCount++;
                             this.unpulseOverview(bm.layerName);
@@ -1884,10 +1892,10 @@ class GameplayManager {
 
     async setupClients() {
         const clientNumber = 4
-        for (let i=1;i<clientNumber+1;i++) {
+        for (let i = 1; i < clientNumber + 1; i++) {
             const client = new Client(i);
             client.generate();
-            this.scoreTracker.addClient(client, i<3?true:false);
+            this.scoreTracker.addClient(client, i < 3 ? true : false);
         }
     }
 
@@ -2400,10 +2408,10 @@ function updateTeamLineups(clients) {
     clients.map((client) => {
         if (leftTeamPlayers.includes(client.spectating.name)) {
             leftTeam += (left > 0 ? `, ` : ``) + `${client.spectating.name}`;
-            left ++;
+            left++;
         } else if (rightTeamPlayers.includes(client.spectating.name)) {
             rightTeam += (right > 0 ? `, ` : ``) + `${client.spectating.name}`;
-            right ++;
+            right++;
         }
     })
 
