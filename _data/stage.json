@@ -1,6 +1,6 @@
 [
     {
-        "currentStage": "S1"
+        "currentStage": "S2"
     },
     {
         "stage": "QL",
@@ -16,7 +16,7 @@
         "firstTo": 5
     },
     {
-        "stage": "S1",
+        "stage": "S2",
         "showcase": "../../_shared_assets/design/showcase_text_s2.png",
         "stageName": "Stage 2",
         "overviewText": "BO11",

@@ -203,6 +203,7 @@ class ShowcaseManager {
             pickSource.style.filter = "blur(14px)";
         })
         this.revealed = 3;
+        this.currentPick = 0;   
     }
     updateDetails(data) {
         this.stinger.play();

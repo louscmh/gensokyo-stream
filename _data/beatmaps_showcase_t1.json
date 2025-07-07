@@ -1,112 +1,128 @@
 [
  {
-   "beatmapId": 1511837,
+   "beatmapId": "ShinRa-Bansho - Heart in Wonderland (Sayama Kaede) [NM1].osu",
    "pick": "NM1",
-   "modSR": 6.54,
+   "modSR": 6.69,
    "customSong": false,
    "collab": "",
    "mappers": ""
  },
  {
-   "beatmapId": 4005731,
+   "beatmapId": 3180049,
    "pick": "NM2",
-   "modSR": 6.51,
+   "modSR": 6.8,
    "customSong": false,
    "collab": "",
    "mappers": ""
  },
  {
-   "beatmapId": "Girls Logic Observatory - Hollow Masquerade (SA ver.) (Sagu) [Kokoro].osu",
+   "beatmapId": 4191546,
    "pick": "NM3",
-   "modSR": 6.2,
+   "modSR": 6.21,
    "customSong": false,
    "collab": "",
    "mappers": ""
  },
  {
-   "beatmapId": 4321758,
+   "beatmapId": "Sephid - Hermatical Reverie (Phten02) [Hermatic].osu",
    "pick": "NM4",
-   "modSR": 5.78,
+   "modSR": 6.55,
    "customSong": false,
    "collab": "",
    "mappers": ""
  },
  {
-   "beatmapId": 3537093,
+   "beatmapId": "Nstryder - Cirno's Tale (eringiRa) [baisi extra].osu",
+   "pick": "NM5",
+   "modSR": 6.19,
+   "customSong": false,
+   "collab": "",
+   "mappers": ""
+ },
+ {
+   "beatmapId": "hatsunetsumiko's - BEYOND THE MASKS (bongo) [Masquerade].osu",
    "pick": "HD1",
-   "modSR": 6.07,
+   "modSR": 6.1,
    "customSong": false,
    "collab": "",
    "mappers": ""
  },
  {
-   "beatmapId": 3350321,
+   "beatmapId": 3180887,
    "pick": "HD2",
-   "modSR": 5.53,
+   "modSR": 5.85,
    "customSong": false,
    "collab": "",
    "mappers": ""
  },
  {
-   "beatmapId": 1513645,
+   "beatmapId": 3479041,
    "pick": "HR1",
-   "modSR": 6.43,
+   "modSR": 6.76,
    "customSong": false,
    "collab": "",
    "mappers": ""
  },
  {
-   "beatmapId": 266778,
+   "beatmapId": 1097476,
    "pick": "HR2",
-   "modSR": 6.14,
+   "modSR": 6.42,
    "customSong": false,
    "collab": "",
    "mappers": ""
  },
  {
-   "beatmapId": 2801940,
+   "beatmapId": 2542956,
    "pick": "DT1",
-   "modSR": 6.47,
+   "modSR": 6.76,
    "customSong": false,
    "collab": "",
    "mappers": ""
  },
  {
-   "beatmapId": 4793444,
+   "beatmapId": 5196872,
    "pick": "DT2",
-   "modSR": 6.66,
+   "modSR": 6.73,
    "customSong": false,
    "collab": "",
    "mappers": ""
  },
  {
-   "beatmapId": 4422422,
+   "beatmapId": 2422377,
    "pick": "DT3",
-   "modSR": 5.99,
+   "modSR": 6.21,
    "customSong": false,
    "collab": "",
    "mappers": ""
  },
  {
-   "beatmapId": 2207263,
+   "beatmapId": 4756034,
    "pick": "FM1",
-   "modSR": 6.02,
+   "modSR": 6.31,
    "customSong": false,
    "collab": "",
    "mappers": ""
  },
  {
-   "beatmapId": "ZUN - Haruka 38 Man Kilo no Voyage (Tokiwa Kano) [It's, Lunatic Time!].osu",
+   "beatmapId": 4885057,
    "pick": "FM2",
-   "modSR": 5.45,
+   "modSR": 5.74,
    "customSong": false,
    "collab": "",
    "mappers": ""
  },
  {
-   "beatmapId": 1391631,
+   "beatmapId": 2330808,
+   "pick": "FM3",
+   "modSR": 6.37,
+   "customSong": false,
+   "collab": "",
+   "mappers": ""
+ },
+ {
+   "beatmapId": 412288,
    "pick": "TB",
-   "modSR": 6.64,
+   "modSR": 6.93,
    "customSong": false,
    "collab": "",
    "mappers": ""
